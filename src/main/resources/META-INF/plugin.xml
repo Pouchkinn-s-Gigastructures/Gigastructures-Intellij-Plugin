@@ -1,15 +1,18 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>com.github.ttftcuts.gigastructuresintellijplugin</id>
-    <name>Gigastructures-Intellij-Plugin</name>
-    <vendor>ttftcuts</vendor>
+    <name>GigaTools</name>
+    <vendor>TTFTCUTS</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>icu.windea.pls</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.github.ttftcuts.gigastructuresintellijplugin.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
         <postStartupActivity implementation="com.github.ttftcuts.gigastructuresintellijplugin.startup.MyProjectActivity" />
+
+
     </extensions>
 </idea-plugin>
