@@ -5,14 +5,30 @@
     <vendor>TTFTCUTS</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>org.jetbrains.plugins.yaml</depends>
     <depends>icu.windea.pls</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.ttftcuts.gigastructuresintellijplugin.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="com.github.ttftcuts.gigastructuresintellijplugin.startup.MyProjectActivity" />
+        <postStartupActivity implementation="com.github.ttftcuts.gigastructuresintellijplugin.startup.GigaToolsInit" />
 
-
+        <annotator language="PARADOX_SCRIPT" implementationClass="com.github.ttftcuts.gigastructuresintellijplugin.annotation.DefinitionPropertyAnnotator"/>
+        <completion.contributor language="PARADOX_SCRIPT" implementationClass="com.github.ttftcuts.gigastructuresintellijplugin.annotation.DefinitionPropertyCompletionContributor" />
     </extensions>
+
+    <actions>
+
+        <group id="gigas.group" text="GigaTools" popup="true">
+            
+            <action
+                    id = "giga.regenlists"
+                    class="com.github.ttftcuts.gigastructuresintellijplugin.actions.GigaRegenMegaCategoryLists"
+                    text = "Rebuild Kilo/Giga Category Triggers"
+            />
+
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </group>
+
+    </actions>
 </idea-plugin>
