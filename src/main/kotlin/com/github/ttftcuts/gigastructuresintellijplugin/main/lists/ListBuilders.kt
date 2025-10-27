@@ -1,6 +1,7 @@
 package com.github.ttftcuts.gigastructuresintellijplugin.main.lists
 
 import com.github.ttftcuts.gigastructuresintellijplugin.main.data.ToolData
+import com.github.ttftcuts.gigastructuresintellijplugin.main.util.EditorUtils.showMessage
 import com.github.ttftcuts.gigastructuresintellijplugin.main.util.GigaPsiUtils
 import com.intellij.openapi.project.Project
 import icu.windea.pls.lang.search.ParadoxDefinitionSearch
@@ -15,7 +16,7 @@ object ListBuilders {
         // find the trigger that we're going to rewrite
         val trigger = ParadoxDefinitionSearch.search(triggerName,"scripted_trigger", selector(project, project.projectFile).definition().distinctByName()).find()
         if (trigger == null) {
-            //show("Failed to find scripted trigger: $triggerName")
+            showMessage("Failed to find scripted trigger: $triggerName")
             return
         }
 

@@ -2,6 +2,7 @@ package com.github.ttftcuts.gigastructuresintellijplugin.actions
 
 import com.github.ttftcuts.gigastructuresintellijplugin.main.lists.ListBuilders
 import com.github.ttftcuts.gigastructuresintellijplugin.main.tagging.TaggedDefinition
+import com.github.ttftcuts.gigastructuresintellijplugin.main.util.EditorUtils.showMessage
 import com.github.ttftcuts.gigastructuresintellijplugin.main.util.GigaPsiUtils
 import com.github.ttftcuts.gigastructuresintellijplugin.main.wrappers.Megastructure
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -92,7 +93,7 @@ internal class GigaRegenMegaCategoryLists : DumbAwareAction() {
 //            ListBuilders.buildMegaCategoryList(project, "plugin_test_megaproject_trigger") { def -> GigaListConditions.hasDefinitionTags(def,"megaproject") }
         }
 
-        //show("Trigger Rebuild Complete")
+        showMessage("Trigger Rebuild Complete")
     }
 
     companion object {
