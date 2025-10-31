@@ -49,7 +49,7 @@ object GigaPsiUtils {
     }
 
     fun getElementName(element: ParadoxScriptDefinitionElement) : String {
-        val locale = ParadoxLocaleManager.getLocaleConfig("en") // english for standardisation
+        val locale = ParadoxLocaleManager.getLocaleConfig("l_english") // english for standardisation
         val selector = selector(element.project, element).localisation().contextSensitive().preferLocale(locale)
         val loc = ParadoxLocalisationSearch.search(element.name, selector).find() ?: return element.name
         val rendered = ParadoxLocalisationTextRenderer().render(loc).replace("\u200B", "")
@@ -98,10 +98,13 @@ object GigaPsiUtils {
             return@e replaced
         }
 
+        println("start process")
+
         //block?.processProperty(conditional, true) {
-        block?.properties()?.options(conditional, true)?.process {
-            println("visited: ${it.name}, ${it.javaClass}")
+        block?.properties()?.options(conditional = conditional, inline = true)?.process {
+            //println("visited: ${it.name}, ${it.javaClass}")
             // if the current file isn't the parameter file, pop the stack
+            println("file: ${it.fileInfo?.path} - parameterFile: $parameterFile - name: ${it.name}")
             if (it.fileInfo != null && it.fileInfo!!.path != parameterFile) {
                 println(it.fileInfo!!.path)
                 println(parameterFile)
