@@ -1,7 +1,6 @@
-package com.github.ttftcuts.gigastructuresintellijplugin.startup
+package com.github.ttftcuts.gigatools.startup
 
-import com.github.ttftcuts.gigastructuresintellijplugin.main.data.ToolData
-import com.intellij.openapi.diagnostic.thisLogger
+import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
 

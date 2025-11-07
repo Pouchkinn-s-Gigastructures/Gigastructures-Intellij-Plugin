@@ -1,4 +1,4 @@
-package com.github.ttftcuts.gigastructuresintellijplugin.annotation
+package com.github.ttftcuts.gigatools.annotation
 
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey

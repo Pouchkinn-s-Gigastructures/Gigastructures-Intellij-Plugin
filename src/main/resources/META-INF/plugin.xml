@@ -1,6 +1,6 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.ttftcuts.gigastructuresintellijplugin</id>
+    <id>com.github.ttftcuts.gigatools</id>
     <name>GigaTools</name>
     <vendor>TTFTCUTS</vendor>
 
@@ -11,10 +11,10 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <postStartupActivity implementation="com.github.ttftcuts.gigastructuresintellijplugin.startup.GigaToolsInit" />
+        <postStartupActivity implementation="com.github.ttftcuts.gigatools.startup.GigaToolsInit" />
 
-        <annotator language="PARADOX_SCRIPT" implementationClass="com.github.ttftcuts.gigastructuresintellijplugin.annotation.DefinitionPropertyAnnotator"/>
-        <completion.contributor language="PARADOX_SCRIPT" implementationClass="com.github.ttftcuts.gigastructuresintellijplugin.annotation.DefinitionPropertyCompletionContributor" />
+        <annotator language="PARADOX_SCRIPT" implementationClass="com.github.ttftcuts.gigatools.annotation.DefinitionPropertyAnnotator"/>
+        <completion.contributor language="PARADOX_SCRIPT" implementationClass="com.github.ttftcuts.gigatools.annotation.DefinitionPropertyCompletionContributor" />
 
         <notificationGroup displayType="BALLOON" id="GigaTools"/>
     </extensions>
@@ -25,8 +25,13 @@
             
             <action
                     id = "giga.regenlists"
-                    class="com.github.ttftcuts.gigastructuresintellijplugin.actions.GigaRegenMegaCategoryLists"
+                    class="com.github.ttftcuts.gigatools.actions.RegenMegaCategoryLists"
                     text = "Rebuild Kilo/Giga Category Triggers"
+            />
+            <action
+                    id = "giga.regenecoloc"
+                    class="com.github.ttftcuts.gigatools.actions.RegenJobEcoLoc"
+                    text = "Rebuild Economic Modifier Localisation"
             />
 
             <add-to-group group-id="ToolsMenu" anchor="last"/>

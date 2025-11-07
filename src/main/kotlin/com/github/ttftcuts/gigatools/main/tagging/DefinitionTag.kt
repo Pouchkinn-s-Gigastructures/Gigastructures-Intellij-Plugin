@@ -1,16 +1,15 @@
-package com.github.ttftcuts.gigastructuresintellijplugin.main.tagging
+package com.github.ttftcuts.gigatools.main.tagging
 
-import com.github.ttftcuts.gigastructuresintellijplugin.main.data.ToolData
-import com.github.ttftcuts.gigastructuresintellijplugin.main.util.GigaPsiUtils
-import com.github.ttftcuts.gigastructuresintellijplugin.main.util.GigaYAMLUtil.asText
-import com.github.ttftcuts.gigastructuresintellijplugin.main.util.GigaYAMLUtil.getValueAndCast
+import com.github.ttftcuts.gigatools.main.data.ToolData
+import com.github.ttftcuts.gigatools.main.util.PsiUtils
+import com.github.ttftcuts.gigatools.main.util.YAMLUtils.asText
+import com.github.ttftcuts.gigatools.main.util.YAMLUtils.getValueAndCast
 import com.intellij.psi.PsiComment
 import icu.windea.pls.lang.*
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 import io.ktor.http.escapeIfNeeded
 import org.jetbrains.yaml.psi.YAMLKeyValue
 import org.jetbrains.yaml.psi.YAMLMapping
-import kotlin.text.get
 
 class DefinitionTag(val name: String, val shortDesc: String, val fullDesc: String) {
 
@@ -37,7 +36,7 @@ class DefinitionTag(val name: String, val shortDesc: String, val fullDesc: Strin
 
         fun getTags(definition: ParadoxScriptDefinitionElement) : Set<DefinitionTag>? {
             // get the previous comment
-            val prevElement = GigaPsiUtils.prevNonWhiteSpaceSibling(definition)
+            val prevElement = PsiUtils.prevNonWhiteSpaceSibling(definition)
             if (prevElement !is PsiComment) { return null }
 
             // check that it starts with the prefix

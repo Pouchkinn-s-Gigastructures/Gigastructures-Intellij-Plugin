@@ -1,4 +1,4 @@
-package com.github.ttftcuts.gigastructuresintellijplugin.main.tagging
+package com.github.ttftcuts.gigatools.main.tagging
 
 import com.intellij.openapi.project.Project
 import icu.windea.pls.lang.search.ParadoxDefinitionSearch

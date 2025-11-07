@@ -1,4 +1,4 @@
-package com.github.ttftcuts.gigastructuresintellijplugin
+package com.github.ttftcuts.gigatools
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls

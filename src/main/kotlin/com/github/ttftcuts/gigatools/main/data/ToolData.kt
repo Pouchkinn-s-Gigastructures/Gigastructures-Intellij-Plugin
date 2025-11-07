@@ -1,8 +1,8 @@
-package com.github.ttftcuts.gigastructuresintellijplugin.main.data
+package com.github.ttftcuts.gigatools.main.data
 
-import com.github.ttftcuts.gigastructuresintellijplugin.main.lists.ListFormat
-import com.github.ttftcuts.gigastructuresintellijplugin.main.tagging.DefinitionTag
-import com.github.ttftcuts.gigastructuresintellijplugin.main.util.GigaYAMLUtil.getValueAndCast
+import com.github.ttftcuts.gigatools.main.lists.ListFormat
+import com.github.ttftcuts.gigatools.main.tagging.DefinitionTag
+import com.github.ttftcuts.gigatools.main.util.YAMLUtils.getValueAndCast
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager

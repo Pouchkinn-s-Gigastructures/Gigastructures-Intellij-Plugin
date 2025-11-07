@@ -1,16 +1,16 @@
-package com.github.ttftcuts.gigastructuresintellijplugin.actions
+package com.github.ttftcuts.gigatools.actions
 
-import com.github.ttftcuts.gigastructuresintellijplugin.main.lists.ListBuilders
-import com.github.ttftcuts.gigastructuresintellijplugin.main.tagging.TaggedDefinition
-import com.github.ttftcuts.gigastructuresintellijplugin.main.util.EditorUtils.showMessage
-import com.github.ttftcuts.gigastructuresintellijplugin.main.util.GigaPsiUtils
-import com.github.ttftcuts.gigastructuresintellijplugin.main.wrappers.Megastructure
+import com.github.ttftcuts.gigatools.main.lists.ListBuilders
+import com.github.ttftcuts.gigatools.main.tagging.TaggedDefinition
+import com.github.ttftcuts.gigatools.main.util.EditorUtils.showMessage
+import com.github.ttftcuts.gigatools.main.util.PsiUtils
+import com.github.ttftcuts.gigatools.main.wrappers.Megastructure
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.DumbAwareAction
 
-internal class GigaRegenMegaCategoryLists : DumbAwareAction() {
+internal class RegenMegaCategoryLists : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
@@ -47,7 +47,7 @@ internal class GigaRegenMegaCategoryLists : DumbAwareAction() {
             }
 
             for(mega in firstStages) {
-                builder.appendLine("# ${GigaPsiUtils.getElementName(mega.def)}")
+                builder.appendLine("# ${PsiUtils.getElementName(mega.def)}")
                 builder.appendLine("or = {")
                 //builder.appendLine("is_megastructure_type = ${mega.def.name} # ${GigaPsiUtils.getElementName(mega.def)}")
                 //builder.appendLine("# Tags: ${mega.tags.keys}")
@@ -64,7 +64,7 @@ internal class GigaRegenMegaCategoryLists : DumbAwareAction() {
                     if (written.contains(toWrite)) { continue }
                     written.add(toWrite)
 
-                    builder.appendLine("is_megastructure_type = ${toWrite.def.name} # ${GigaPsiUtils.getElementName(toWrite.def)}")
+                    builder.appendLine("is_megastructure_type = ${toWrite.def.name} # ${PsiUtils.getElementName(toWrite.def)}")
 
                     if (!toWrite.hasTags("force_final")) {
                         toWriteSet.addAll(toWrite.upgradeTo.filter { e -> !e.hasAnyTags("technical") })

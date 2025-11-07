@@ -1,8 +1,8 @@
-package com.github.ttftcuts.gigastructuresintellijplugin.main.lists
+package com.github.ttftcuts.gigatools.main.lists
 
-import com.github.ttftcuts.gigastructuresintellijplugin.main.data.ToolData
-import com.github.ttftcuts.gigastructuresintellijplugin.main.util.EditorUtils.showMessage
-import com.github.ttftcuts.gigastructuresintellijplugin.main.util.GigaPsiUtils
+import com.github.ttftcuts.gigatools.main.data.ToolData
+import com.github.ttftcuts.gigatools.main.util.EditorUtils.showMessage
+import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.intellij.openapi.project.Project
 import icu.windea.pls.lang.search.ParadoxDefinitionSearch
 import icu.windea.pls.lang.search.selector.*
@@ -58,7 +58,7 @@ object ListBuilders {
 
         string = namePattern.replace(string, item.name)
 
-        val locName = lazy { GigaPsiUtils.getElementName(item) }
+        val locName = lazy { PsiUtils.getElementName(item) }
         string = locNamePattern.replace(string) { _ -> locName.value }
 
         if (parameters.isNotEmpty()) {

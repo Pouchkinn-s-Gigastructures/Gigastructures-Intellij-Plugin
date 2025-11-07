@@ -1,7 +1,7 @@
-package com.github.ttftcuts.gigastructuresintellijplugin.main.lists
+package com.github.ttftcuts.gigatools.main.lists
 
-import com.github.ttftcuts.gigastructuresintellijplugin.main.util.GigaYAMLUtil.asText
-import com.github.ttftcuts.gigastructuresintellijplugin.main.util.GigaYAMLUtil.getValueAndCast
+import com.github.ttftcuts.gigatools.main.util.YAMLUtils.asText
+import com.github.ttftcuts.gigatools.main.util.YAMLUtils.getValueAndCast
 import io.ktor.http.escapeIfNeeded
 import org.jetbrains.yaml.psi.YAMLKeyValue
 import org.jetbrains.yaml.psi.YAMLMapping

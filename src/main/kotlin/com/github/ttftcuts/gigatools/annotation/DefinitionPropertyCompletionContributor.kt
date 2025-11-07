@@ -1,7 +1,7 @@
-package com.github.ttftcuts.gigastructuresintellijplugin.annotation
+package com.github.ttftcuts.gigatools.annotation
 
-import com.github.ttftcuts.gigastructuresintellijplugin.main.data.ToolData
-import com.github.ttftcuts.gigastructuresintellijplugin.main.util.GigaPsiUtils
+import com.github.ttftcuts.gigatools.main.data.ToolData
+import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
@@ -24,7 +24,7 @@ class DefinitionPropertyCompletionContributor : CompletionContributor() {
                     val comment = parameters.position
 
                     // find the next element and check that it's a definition
-                    val nextElement = GigaPsiUtils.nextNonWhiteSpaceSibling(comment)
+                    val nextElement = PsiUtils.nextNonWhiteSpaceSibling(comment)
                     if (nextElement !is ParadoxScriptDefinitionElement) { return }
                     // get the valid tags for the definition's type
                     val elementType = nextElement.definitionInfo?.typeConfig?.name ?: "unknown"

@@ -1,8 +1,8 @@
-package com.github.ttftcuts.gigastructuresintellijplugin.annotation
+package com.github.ttftcuts.gigatools.annotation
 
-import com.github.ttftcuts.gigastructuresintellijplugin.main.data.ToolData
-import com.github.ttftcuts.gigastructuresintellijplugin.main.tagging.DefinitionTag
-import com.github.ttftcuts.gigastructuresintellijplugin.main.util.GigaPsiUtils
+import com.github.ttftcuts.gigatools.main.data.ToolData
+import com.github.ttftcuts.gigatools.main.tagging.DefinitionTag
+import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
@@ -29,7 +29,7 @@ class DefinitionPropertyAnnotator : Annotator {
         println("STARTED")
 
         // get next non-whitespace element or bail
-        val nextElement: PsiElement = GigaPsiUtils.nextNonWhiteSpaceSibling(element) ?: return
+        val nextElement: PsiElement = PsiUtils.nextNonWhiteSpaceSibling(element) ?: return
         // only definition lines
         if (nextElement !is ParadoxScriptDefinitionElement) { return }
         // work out what type of thing we're looking at for getting valid tags

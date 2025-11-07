@@ -1,4 +1,4 @@
-package com.github.ttftcuts.gigastructuresintellijplugin.main.util
+package com.github.ttftcuts.gigatools.main.util
 
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
@@ -18,7 +18,7 @@ import icu.windea.pls.lang.util.renderers.ParadoxLocalisationTextRenderer
 import icu.windea.pls.script.ParadoxScriptLanguage
 import icu.windea.pls.script.psi.*
 
-object GigaPsiUtils {
+object PsiUtils {
 
     fun nextNonWhiteSpaceSibling(element: PsiElement): PsiElement? {
         var nextElement: PsiElement? = element.nextSibling ?: element.parent.nextSibling

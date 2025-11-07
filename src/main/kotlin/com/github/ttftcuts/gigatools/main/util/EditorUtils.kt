@@ -1,4 +1,4 @@
-package com.github.ttftcuts.gigastructuresintellijplugin.main.util
+package com.github.ttftcuts.gigatools.main.util
 
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationAction

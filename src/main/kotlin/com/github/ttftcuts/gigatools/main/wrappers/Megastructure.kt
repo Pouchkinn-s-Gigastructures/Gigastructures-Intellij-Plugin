@@ -1,7 +1,7 @@
-package com.github.ttftcuts.gigastructuresintellijplugin.main.wrappers
+package com.github.ttftcuts.gigatools.main.wrappers
 
-import com.github.ttftcuts.gigastructuresintellijplugin.main.tagging.TaggedDefinition
-import com.github.ttftcuts.gigastructuresintellijplugin.main.util.GigaPsiUtils.findPropertyAndInline
+import com.github.ttftcuts.gigatools.main.tagging.TaggedDefinition
+import com.github.ttftcuts.gigatools.main.util.PsiUtils.findPropertyAndInline
 import com.intellij.openapi.project.Project
 import icu.windea.pls.lang.search.ParadoxDefinitionSearch
 import icu.windea.pls.lang.search.selector.*
