@@ -25,27 +25,5 @@ class Megastructure(def: ParadoxScriptDefinitionElement) : TaggedDefinition(def)
         cache.values.filterNotNull().filter { e -> (e != this) && e.upgradeFrom.contains(this) }.toSet()
     }
 
-    companion object {
-        private var resolvedAll = false
-        val cache : MutableMap<String,Megastructure?> = mutableMapOf()
-        fun clearCache() {
-            cache.clear()
-            resolvedAll = false
-        }
-
-        fun resolve(project: Project, id: String) : Megastructure? {
-            if (cache.containsKey(id)) { return cache[id] }
-            val found = ParadoxDefinitionSearch.search(id, "megastructure", selector(project, project.projectFile).definition().distinctByName()).find()
-            val mega = if (found != null) Megastructure(found) else null
-            cache[id] = mega
-            return mega
-        }
-
-        fun resolveAll(project: Project) {
-            if (resolvedAll) { return }
-            resolvedAll = true
-            val found = ParadoxDefinitionSearch.search(null, "megastructure", selector(project, project.projectFile).definition().distinctByName()).findAll()
-            cache.putAll(found.filter { e -> !cache.keys.contains(e.name) }.associate { e -> e.name to Megastructure(e) })
-        }
-    }
+    companion object: WrapperCompanion<Megastructure>("megastructure", ::Megastructure)
 }

@@ -33,7 +33,7 @@ internal class RegenMegaCategoryLists : DumbAwareAction() {
         WriteCommandAction.writeCommandAction(project).withName(NAME).run<Throwable> {
 
             // reset cache
-            Megastructure.clearCache()
+            Megastructure.cache.clear()
 
             val trigger = TaggedDefinition.resolve(project, "scripted_trigger", "another_test_trigger")
 

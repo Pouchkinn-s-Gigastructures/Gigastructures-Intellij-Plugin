@@ -24,7 +24,7 @@ open class TaggedDefinition(val def: ParadoxScriptDefinitionElement) {
     }
 
     override fun toString(): String {
-        return "(${this.javaClass.canonicalName}: ${def.name})"
+        return "(${this.javaClass.simpleName}: ${def.name})"
     }
 
     companion object {
