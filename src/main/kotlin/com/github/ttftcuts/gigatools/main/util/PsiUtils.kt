@@ -15,6 +15,7 @@ import icu.windea.pls.lang.search.selector.*
 import icu.windea.pls.lang.util.ParadoxLocaleManager
 import icu.windea.pls.lang.util.dataFlow.*
 import icu.windea.pls.lang.util.renderers.ParadoxLocalisationTextRenderer
+import icu.windea.pls.model.ParadoxRootInfo
 import icu.windea.pls.script.ParadoxScriptLanguage
 import icu.windea.pls.script.psi.*
 
@@ -98,19 +99,19 @@ object PsiUtils {
             return@e replaced
         }
 
-        println("start process")
+        //println("start process")
 
         //block?.processProperty(conditional, true) {
         block?.properties()?.options(conditional = conditional, inline = true)?.process {
             //println("visited: ${it.name}, ${it.javaClass}")
             // if the current file isn't the parameter file, pop the stack
-            println("file: ${it.fileInfo?.path} - parameterFile: $parameterFile - name: ${it.name}")
+            //println("file: ${it.fileInfo?.path} - parameterFile: $parameterFile - name: ${it.name}")
             if (it.fileInfo != null && it.fileInfo!!.path != parameterFile) {
                 println(it.fileInfo!!.path)
                 println(parameterFile)
                 parameterFile = it.fileInfo!!.path
                 parameterStack.removeLast()
-                println("POP!")
+                //println("POP!")
             }
             // if the element appears to be an inline script
             if (it.name.equals("inline_script", true) && it.fileInfo != null) {
@@ -143,7 +144,7 @@ object PsiUtils {
                     // new inline, push onto the stack
                     parameterStack.add(data)
                     parameterFile = inlineFilePath
-                    println("PUSH $parameterFile!")
+                    //println("PUSH $parameterFile!")
                 }
             }
             if (propertyName == null || propertyName.equals(it.name, ignoreCase)) {
@@ -157,41 +158,9 @@ object PsiUtils {
         return result to doReplacement
     }
 
-//    fun PsiElement.findPropertyTest(
-//        propertyName: String? = null,
-//        ignoreCase: Boolean = true,
-//        conditional: Boolean = false,
-//        inline: Boolean = false
-//    ): ParadoxScriptProperty? {
-//        if (language != ParadoxScriptLanguage) return null
-//        if (propertyName != null && propertyName.isEmpty()) return this as? ParadoxScriptProperty
-//        val block = when {
-//            this is ParadoxScriptDefinitionElement -> this.block
-//            this is ParadoxScriptBlock -> this
-//            else -> null
-//        }
-//        var result: ParadoxScriptProperty? = null
-//        block?.processProperty(conditional, inline) {
-//            if (it.name.equals("inline_script", true)) {
-//                val from = ParadoxParameterContextReferenceInfo.From.ContextReference
-//                val contextConfig = ParadoxExpressionManager.getConfigs(it).firstOrNull()
-//                if (contextConfig != null) {
-//                    val contextReferenceInfo = ParadoxParameterSupport.getContextReferenceInfo(it, from, contextConfig)
-//                    println(contextReferenceInfo)
-//
-//                    println(contextReferenceInfo?.arguments?.map { e -> "${e.argumentName} = ${e.argumentValueElement?.text}" })
-//
-//                    //print(contextReferenceInfo.)
-//                }
-//            }
-//
-//            if (propertyName == null || propertyName.equals(it.name, ignoreCase)) {
-//                result = it
-//                false
-//            } else {
-//                true
-//            }
-//        }
-//        return result
-//    }
+    fun PsiElement.isVanilla(): Boolean {
+        if (this.fileInfo == null) { return false }
+        if (this.fileInfo!!.rootInfo is ParadoxRootInfo.Game) { return true }
+        return false
+    }
 }

@@ -4,10 +4,16 @@ import org.jetbrains.yaml.psi.YAMLKeyValue
 import org.jetbrains.yaml.psi.YAMLMapping
 import org.jetbrains.yaml.psi.YAMLPsiElement
 import org.jetbrains.yaml.psi.YAMLScalar
+import org.jetbrains.yaml.psi.YAMLSequenceItem
 
 object YAMLUtils {
     inline fun <reified T> YAMLKeyValue.getValueAndCast() : T {
         if (value !is T) { error("Type Mismatch: value of $key is not a ${T::class}: $value (${value?.javaClass})") }
+        return value as T
+    }
+
+    inline fun <reified T> YAMLSequenceItem.getValueAndCast() : T {
+        if (value !is T) { error("Type Mismatch: value is not a ${T::class}: $value (${value?.javaClass})") }
         return value as T
     }
 

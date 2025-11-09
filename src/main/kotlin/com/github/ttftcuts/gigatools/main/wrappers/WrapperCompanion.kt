@@ -8,6 +8,11 @@ import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 open class WrapperCompanion<T: TaggedDefinition>(val typeExpression: String, val factory: (ParadoxScriptDefinitionElement) -> T) {
     val cache = DefinitionCache<T>(typeExpression, factory)
 
+    fun regenerateCache(project: Project) {
+        clearCache()
+        resolveAll(project)
+    }
+
     fun clearCache() { cache.clear() }
     fun get(id: String): T? { return cache.get(id) }
     fun resolve(project: Project, id: String): T? { return cache.resolve(project, id) }

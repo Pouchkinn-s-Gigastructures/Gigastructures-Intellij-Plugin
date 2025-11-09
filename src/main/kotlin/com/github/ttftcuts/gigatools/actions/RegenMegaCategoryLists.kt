@@ -33,12 +33,11 @@ internal class RegenMegaCategoryLists : DumbAwareAction() {
         WriteCommandAction.writeCommandAction(project).withName(NAME).run<Throwable> {
 
             // reset cache
-            Megastructure.cache.clear()
+            Megastructure.regenerateCache(project)
 
             val trigger = TaggedDefinition.resolve(project, "scripted_trigger", "another_test_trigger")
 
             val builder = StringBuilder()
-            Megastructure.resolveAll(project)
             val firstStages = Megastructure.cache.values.filterNotNull().filter { e ->
                 e.upgradeFrom.isEmpty() && // must be a first stage
                         e.upgradeTo.isNotEmpty() && // which upgrades to something else (misses the inlined megas, pending potential fix?)

@@ -1,5 +1,6 @@
 package com.github.ttftcuts.gigatools.main.tagging
 
+import com.github.ttftcuts.gigatools.main.util.PsiUtils.isVanilla
 import com.intellij.openapi.project.Project
 import icu.windea.pls.lang.search.ParadoxDefinitionSearch
 import icu.windea.pls.lang.search.selector.*
@@ -7,6 +8,8 @@ import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 
 open class TaggedDefinition(val def: ParadoxScriptDefinitionElement) {
     val tags: Map<String,DefinitionTag> by lazy { DefinitionTag.getTags(def)?.associate { tag -> tag.name to tag } ?: mapOf() }
+
+    val name get() = def.name
 
     // does this definition have EVERY listed tag
     fun hasTags(vararg tagsToCheck : String) : Boolean {
@@ -26,6 +29,8 @@ open class TaggedDefinition(val def: ParadoxScriptDefinitionElement) {
     override fun toString(): String {
         return "(${this.javaClass.simpleName}: ${def.name})"
     }
+
+    fun isVanilla(): Boolean { return def.isVanilla() }
 
     companion object {
         fun resolve(project: Project, type: String, id: String) : TaggedDefinition? {
