@@ -54,10 +54,8 @@ internal class RegenJobEcoLoc : DumbAwareAction() {
             // also exclude any categories which don't generate modifiers
             val categories = EconomicCategory.cache.values.filterNotNull().filter { cat ->
                 !ToolData.EcoCategoryLoc.excludeCategories.contains(cat.name)
-                        && (cat == planetJobs || cat.isDescendantOf(planetJobs) || ToolData.EcoCategoryLoc.includeCategories.contains(
-                    cat.name
-                ))
-                        && cat.generatesAnyModifiers
+                && (cat == planetJobs || cat.isDescendantOf(planetJobs) || ToolData.EcoCategoryLoc.includeCategories.contains(cat.name))
+                && cat.generatesAnyModifiers
             }.toSet()
 
             // all resources, minus exclusions from data
@@ -79,10 +77,8 @@ internal class RegenJobEcoLoc : DumbAwareAction() {
                 if (!test) {
                     return
                 }
-                val element = ParadoxLocalisationSearch.search(
-                    key,
-                    selector(project, project.projectFile).localisation().locale(locale)
-                ).find()
+                val element = ParadoxLocalisationSearch.search(key, selector(project, project.projectFile)
+                    .localisation().locale(locale)).find()
 
                 if (element == null || !element.isVanilla()) {
                     builder.appendLine(" $key:0 \"$value\"")
@@ -92,6 +88,7 @@ internal class RegenJobEcoLoc : DumbAwareAction() {
             builder.appendLine("# Resources")
             for (resource in resources) {
                 // resource icon, with or without name, depends on whether paradox made a mistake or not
+                // turns out they did not :(
                 val nameAndIcon = "£${resource.name}£ " // no resource name
                 //val nameAndIcon = "£${resource.name}£ §Y$${resource.name}$§! " // with resource name
 
@@ -123,10 +120,14 @@ internal class RegenJobEcoLoc : DumbAwareAction() {
                 // everything mults
                 writeLoc(
                     "mod_${category.name}_produces_mult",
-                    "Resources Produced from $jobloc",
+                    "\$giga_resources_produced_from$ $jobloc",
                     category.generatesProducesMult
                 )
-                writeLoc("mod_${category.name}_upkeep_mult", "Upkeep for $jobloc", category.generatesUpkeepMult)
+                writeLoc(
+                    "mod_${category.name}_upkeep_mult",
+                    "\$giga_upkeep_for$ $jobloc",
+                    category.generatesUpkeepMult
+                )
                 //builder.appendLine()
 
                 for (resource in resources) {
