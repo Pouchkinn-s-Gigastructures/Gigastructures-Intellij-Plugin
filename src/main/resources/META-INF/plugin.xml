@@ -34,6 +34,14 @@
                     text = "Rebuild Economic Modifier Localisation"
             />
 
+            <separator/>
+
+            <action
+                    id = "giga.reloadtooldata"
+                    class="com.github.ttftcuts.gigatools.actions.ReloadToolData"
+                    text = "Reload Data File"
+            />
+
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </group>
 

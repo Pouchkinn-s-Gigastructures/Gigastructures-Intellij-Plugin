@@ -24,7 +24,7 @@ import icu.windea.pls.localisation.psi.ParadoxLocalisationElementFactory
 import icu.windea.pls.localisation.psi.ParadoxLocalisationFile
 import icu.windea.pls.localisation.psi.ParadoxLocalisationPropertyList
 
-internal class RegenJobEcoLoc : DumbAwareAction() {
+class RegenJobEcoLoc : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {

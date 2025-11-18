@@ -3,13 +3,11 @@ package com.github.ttftcuts.gigatools.main.data
 import com.github.ttftcuts.gigatools.main.lists.ListFormat
 import com.github.ttftcuts.gigatools.main.tagging.DefinitionTag
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.getValueAndCast
-import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.util.concurrency.AppExecutorUtil
-import org.jetbrains.concurrency.await
 import org.jetbrains.yaml.psi.YAMLFile
 import org.jetbrains.yaml.psi.YAMLMapping
 import org.jetbrains.yaml.psi.YAMLScalar
@@ -17,7 +15,7 @@ import org.jetbrains.yaml.psi.YAMLSequence
 
 object ToolData {
     suspend fun loadDataFile(project: Project) {
-        val file = ReadAction.nonBlocking<YAMLFile> {
+        readAction {
             val files = FilenameIndex.getVirtualFilesByName("gigatools_data.yml", GlobalSearchScope.projectScope(project))
             if (files.isEmpty()) {
                 error("Data file not found")
@@ -26,24 +24,40 @@ object ToolData {
             if (psiFile !is YAMLFile) {
                 error("Data file isn't YAML")
             }
-            psiFile
-        }.submit(AppExecutorUtil.getAppExecutorService()).await()
 
-        val rootElement = file.documents.first().topLevelValue
-        if (rootElement !is YAMLMapping) { error("Malformed data file, should be a map at root") }
-        val root : YAMLMapping = rootElement
+            val rootElement = psiFile.documents.first().topLevelValue
+            if (rootElement !is YAMLMapping) {
+                error("Malformed data file, should be a map at root")
+            }
+            val root: YAMLMapping = rootElement
 
-        // oh boy this is a complex line
-        // for each pair in the tags element's key-value pairs, make a map of the key text and a map of the value's key-value pairs, mapped to THEIR name and a tag entry derived from the value
-        definitionTags = root.getValueAndCast<YAMLMapping>("tags").keyValues.associate { categoryPair -> categoryPair.keyText to categoryPair.getValueAndCast<YAMLMapping>().keyValues.associate { entryPair -> entryPair.keyText to DefinitionTag.fromYAMLKeyValue(entryPair) } }
+            // oh boy this is a complex line
+            // for each pair in the tags element's key-value pairs, make a map of the key text and a map of the value's key-value pairs, mapped to THEIR name and a tag entry derived from the value
+            definitionTags = root.getValueAndCast<YAMLMapping>("tags").keyValues.associate { categoryPair ->
+                categoryPair.keyText to categoryPair.getValueAndCast<YAMLMapping>().keyValues.associate { entryPair ->
+                    entryPair.keyText to DefinitionTag.fromYAMLKeyValue(entryPair)
+                }
+            }
 
-        // get all the list formats too!
-        listFormats = root.getValueAndCast<YAMLMapping>("list_formats").keyValues.associate { pair -> pair.keyText to ListFormat.fromYAMLKeyValue(pair) }
+            // get all the list formats too!
+            listFormats = root.getValueAndCast<YAMLMapping>("list_formats").keyValues.associate { pair ->
+                pair.keyText to ListFormat.fromYAMLKeyValue(pair)
+            }
 
-        // economic category loc, categories to include and exclude, resources to exclude
-        EcoCategoryLoc.includeCategories = root.getValueAndCast<YAMLMapping>("eco_category_loc").getValueAndCast<YAMLMapping>("categories").getValueAndCast<YAMLSequence>("include").items.map { item -> item.getValueAndCast<YAMLScalar>().textValue }.toSet()
-        EcoCategoryLoc.excludeCategories = root.getValueAndCast<YAMLMapping>("eco_category_loc").getValueAndCast<YAMLMapping>("categories").getValueAndCast<YAMLSequence>("exclude").items.map { item -> item.getValueAndCast<YAMLScalar>().textValue }.toSet()
-        EcoCategoryLoc.excludeResources = root.getValueAndCast<YAMLMapping>("eco_category_loc").getValueAndCast<YAMLMapping>("resources").getValueAndCast<YAMLSequence>("exclude").items.map { item -> item.getValueAndCast<YAMLScalar>().textValue }.toSet()
+            // economic category loc, categories to include and exclude, resources to exclude
+            EcoCategoryLoc.includeCategories =
+                root.getValueAndCast<YAMLMapping>("eco_category_loc").getValueAndCast<YAMLMapping>("categories")
+                    .getValueAndCast<YAMLSequence>("include").items.map { item -> item.getValueAndCast<YAMLScalar>().textValue }
+                    .toSet()
+            EcoCategoryLoc.excludeCategories =
+                root.getValueAndCast<YAMLMapping>("eco_category_loc").getValueAndCast<YAMLMapping>("categories")
+                    .getValueAndCast<YAMLSequence>("exclude").items.map { item -> item.getValueAndCast<YAMLScalar>().textValue }
+                    .toSet()
+            EcoCategoryLoc.excludeResources =
+                root.getValueAndCast<YAMLMapping>("eco_category_loc").getValueAndCast<YAMLMapping>("resources")
+                    .getValueAndCast<YAMLSequence>("exclude").items.map { item -> item.getValueAndCast<YAMLScalar>().textValue }
+                    .toSet()
+        }
     }
 
     val textGeneratedBlock = "WARNING: The contents of this block are generated by script, any manual changes will be overwritten"
