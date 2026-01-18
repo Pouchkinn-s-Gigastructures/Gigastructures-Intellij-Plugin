@@ -1,5 +1,6 @@
 package com.github.ttftcuts.gigatools.actions
 
+import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.lists.ListBuilders
 import com.github.ttftcuts.gigatools.main.tagging.TaggedDefinition
 import com.github.ttftcuts.gigatools.main.util.EditorUtils.showMessage
@@ -14,6 +15,8 @@ class RegenMegaCategoryLists : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
+        val project = e.project
+        e.presentation.isEnabled = (project != null) && ToolData.isLoaded
     }
 
     override fun actionPerformed(e: AnActionEvent) {

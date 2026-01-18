@@ -28,6 +28,8 @@ class RegenJobEcoLoc : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
+        val project = e.project
+        e.presentation.isEnabled = (project != null) && ToolData.isLoaded
     }
 
     override fun actionPerformed(e: AnActionEvent) {
