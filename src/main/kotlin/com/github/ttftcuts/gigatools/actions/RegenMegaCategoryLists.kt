@@ -6,6 +6,7 @@ import com.github.ttftcuts.gigatools.main.tagging.TaggedDefinition
 import com.github.ttftcuts.gigatools.main.util.EditorUtils.showMessage
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.github.ttftcuts.gigatools.main.wrappers.Megastructure
+import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit.Companion.economicCategory
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.WriteCommandAction
@@ -38,46 +39,52 @@ class RegenMegaCategoryLists : DumbAwareAction() {
             // reset cache
             Megastructure.regenerateCache(project)
 
-            val trigger = TaggedDefinition.resolve(project, "scripted_trigger", "another_test_trigger")
+            val nexus = Megastructure.get("think_tank_0")
+            println(nexus?.name)
+            println(nexus?.economicCategory)
+            println(nexus?.tags)
 
-            val builder = StringBuilder()
-            val firstStages = Megastructure.cache.values.filterNotNull().filter { e ->
-                e.upgradeFrom.isEmpty() && // must be a first stage
-                        e.upgradeTo.isNotEmpty() && // which upgrades to something else (misses the inlined megas, pending potential fix?)
-                        !e.hasAnyTags("technical", "ruined") // ruins don't count, technical aren't proper megas
-                //true
-            }
 
-            for(mega in firstStages) {
-                builder.appendLine("# ${PsiUtils.getElementName(mega.def)}")
-                builder.appendLine("or = {")
-                //builder.appendLine("is_megastructure_type = ${mega.def.name} # ${GigaPsiUtils.getElementName(mega.def)}")
-                //builder.appendLine("# Tags: ${mega.tags.keys}")
-                //builder.appendLine("# Upgrades from: ${mega.upgradeFrom.size}")
-                //builder.appendLine("# Upgrades to: ${mega.upgradeTo.size}")
-
-                val toWriteSet = mutableSetOf(mega)
-                val written : MutableSet<Megastructure> = mutableSetOf()
-                while (toWriteSet.isNotEmpty()) {
-                    val toWrite = toWriteSet.first()
-                    toWriteSet.remove(toWrite)
-
-                    // catch loops
-                    if (written.contains(toWrite)) { continue }
-                    written.add(toWrite)
-
-                    builder.appendLine("is_megastructure_type = ${toWrite.def.name} # ${PsiUtils.getElementName(toWrite.def)}")
-
-                    if (!toWrite.hasTags("force_final")) {
-                        toWriteSet.addAll(toWrite.upgradeTo.filter { e -> !e.hasAnyTags("technical") })
-                    }
-                }
-
-                builder.appendLine("}")
-                builder.appendLine()
-            }
-
-            ListBuilders.replaceBlockContents(project, trigger!!.def.block!!, builder.toString())
+//            val trigger = TaggedDefinition.resolve(project, "scripted_trigger", "another_test_trigger")
+//
+//            val builder = StringBuilder()
+//            val firstStages = Megastructure.cache.values.filterNotNull().filter { e ->
+//                e.upgradeFrom.isEmpty() && // must be a first stage
+//                        e.upgradeTo.isNotEmpty() && // which upgrades to something else (misses the inlined megas, pending potential fix?)
+//                        !e.hasAnyTags("technical", "ruined") // ruins don't count, technical aren't proper megas
+//                //true
+//            }
+//
+//            for(mega in firstStages) {
+//                builder.appendLine("# ${PsiUtils.getElementName(mega.def)}")
+//                builder.appendLine("or = {")
+//                //builder.appendLine("is_megastructure_type = ${mega.def.name} # ${GigaPsiUtils.getElementName(mega.def)}")
+//                //builder.appendLine("# Tags: ${mega.tags.keys}")
+//                //builder.appendLine("# Upgrades from: ${mega.upgradeFrom.size}")
+//                //builder.appendLine("# Upgrades to: ${mega.upgradeTo.size}")
+//
+//                val toWriteSet = mutableSetOf(mega)
+//                val written : MutableSet<Megastructure> = mutableSetOf()
+//                while (toWriteSet.isNotEmpty()) {
+//                    val toWrite = toWriteSet.first()
+//                    toWriteSet.remove(toWrite)
+//
+//                    // catch loops
+//                    if (written.contains(toWrite)) { continue }
+//                    written.add(toWrite)
+//
+//                    builder.appendLine("is_megastructure_type = ${toWrite.def.name} # ${PsiUtils.getElementName(toWrite.def)}")
+//
+//                    if (!toWrite.hasTags("force_final")) {
+//                        toWriteSet.addAll(toWrite.upgradeTo.filter { e -> !e.hasAnyTags("technical") })
+//                    }
+//                }
+//
+//                builder.appendLine("}")
+//                builder.appendLine()
+//            }
+//
+//            ListBuilders.replaceBlockContents(project, trigger!!.def.block!!, builder.toString())
 
 //            // test triggers for now
 //            ListBuilders.buildMegaCategoryList(project, "plugin_test_kilos_trigger") { def ->

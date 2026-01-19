@@ -26,7 +26,7 @@ class DefinitionPropertyAnnotator : Annotator {
         val text = element.text
         // only specially annotated lines
         if (!text.startsWith(DefinitionTag.PREFIX)) { return }
-        println("STARTED")
+        //println("STARTED")
 
         // get next non-whitespace element or bail
         val nextElement: PsiElement = PsiUtils.nextNonWhiteSpaceSibling(element) ?: return

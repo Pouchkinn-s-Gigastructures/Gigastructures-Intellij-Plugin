@@ -107,8 +107,8 @@ object PsiUtils {
             // if the current file isn't the parameter file, pop the stack
             //println("file: ${it.fileInfo?.path} - parameterFile: $parameterFile - name: ${it.name}")
             if (it.fileInfo != null && it.fileInfo!!.path != parameterFile) {
-                println(it.fileInfo!!.path)
-                println(parameterFile)
+                //println(it.fileInfo!!.path)
+                //println(parameterFile)
                 parameterFile = it.fileInfo!!.path
                 parameterStack.removeLast()
                 //println("POP!")

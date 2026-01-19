@@ -7,7 +7,7 @@ import icu.windea.pls.lang.search.selector.*
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 
 open class TaggedDefinition(val def: ParadoxScriptDefinitionElement) {
-    val tags: Map<String,DefinitionTag> by lazy { DefinitionTag.getTags(def)?.associate { tag -> tag.name to tag } ?: mapOf() }
+    open val tags: MutableMap<String,DefinitionTag> by lazy { DefinitionTag.getTags(def)?.associate { tag -> tag.name to tag }?.toMutableMap() ?: mutableMapOf() }
 
     val name get() = def.name
 

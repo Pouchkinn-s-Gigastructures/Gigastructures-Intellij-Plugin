@@ -5,6 +5,7 @@ import org.jetbrains.yaml.psi.YAMLKeyValue
 import org.jetbrains.yaml.psi.YAMLMapping
 import org.jetbrains.yaml.psi.YAMLPsiElement
 import org.jetbrains.yaml.psi.YAMLScalar
+import org.jetbrains.yaml.psi.YAMLSequence
 import org.jetbrains.yaml.psi.YAMLSequenceItem
 
 object YAMLUtils {
@@ -23,6 +24,10 @@ object YAMLUtils {
         val value = pair?.value
         if (value !is T) { error("Type Mismatch: value of $key is not a ${T::class}: $value (${value?.javaClass})") }
         return value
+    }
+
+    inline fun <reified T> YAMLSequence.getItemsAndCast() : List<T> {
+        return items.map { item -> item.getValueAndCast() }
     }
 
     fun YAMLMapping.resolveKeyValues() : Iterable<YAMLKeyValue> {

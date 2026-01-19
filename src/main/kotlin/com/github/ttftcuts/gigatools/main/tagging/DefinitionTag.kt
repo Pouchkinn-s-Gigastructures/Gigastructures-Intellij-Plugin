@@ -3,6 +3,7 @@ package com.github.ttftcuts.gigatools.main.tagging
 import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.asText
+import com.github.ttftcuts.gigatools.main.util.YAMLUtils.getItemsAndCast
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.getValueAndCast
 import com.intellij.psi.PsiComment
 import icu.windea.pls.lang.*
@@ -10,8 +11,11 @@ import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 import io.ktor.http.escapeIfNeeded
 import org.jetbrains.yaml.psi.YAMLKeyValue
 import org.jetbrains.yaml.psi.YAMLMapping
+import org.jetbrains.yaml.psi.YAMLScalar
+import org.jetbrains.yaml.psi.YAMLScalarText
+import org.jetbrains.yaml.psi.YAMLSequence
 
-class DefinitionTag(val name: String, val shortDesc: String, val fullDesc: String) {
+class DefinitionTag(val name: String, val shortDesc: String, val fullDesc: String, val incompatibleList: List<String>?) {
 
     fun entry(): Pair<String, DefinitionTag> {
         return Pair(name, this)
@@ -30,8 +34,9 @@ class DefinitionTag(val name: String, val shortDesc: String, val fullDesc: Strin
             val def: YAMLMapping = tagPair.getValueAndCast()
             val desc: String = def.getKeyValueByKey("desc")?.asText() ?: ""
             val fullDesc: String = def.getKeyValueByKey("fullDesc")?.asText() ?: ""
+            val incompatibleList: List<String>? = def.getKeyValueByKey("incompatible")?.getValueAndCast<YAMLSequence>()?.getItemsAndCast<YAMLScalar>()?.map { item -> item.asText() }
 
-            return DefinitionTag(name, desc, fullDesc)
+            return DefinitionTag(name, desc, fullDesc, incompatibleList)
         }
 
         fun getTags(definition: ParadoxScriptDefinitionElement) : Set<DefinitionTag>? {

@@ -36,13 +36,6 @@ object ToolData {
             }
             val root: YAMLMapping = rootElement
 
-            val tags = root.getValueAndCast<YAMLMapping>("tags")
-            println("RESOLVE KEYS TEST")
-            for (thing in tags.resolveKeyValues()) {
-                println("print")
-            }
-            println("RESOLVE KEYS TEST END")
-
             // oh boy this is a complex line
             // for each pair in the tags element's key-value pairs, make a map of the key text and a map of the value's key-value pairs, mapped to THEIR name and a tag entry derived from the value
             definitionTags = root.getValueAndCast<YAMLMapping>("tags").resolveKeyValues().associate { categoryPair ->
@@ -52,7 +45,7 @@ object ToolData {
             }
 
             // get all the list formats too!
-            listFormats = root.getValueAndCast<YAMLMapping>("list_formats").keyValues.associate { pair ->
+            listFormats = root.getValueAndCast<YAMLMapping>("list_formats").resolveKeyValues().associate { pair ->
                 pair.keyText to ListFormat.fromYAMLKeyValue(pair)
             }
 
