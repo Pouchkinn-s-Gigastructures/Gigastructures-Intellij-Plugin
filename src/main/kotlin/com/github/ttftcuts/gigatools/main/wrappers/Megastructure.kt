@@ -1,42 +1,18 @@
 package com.github.ttftcuts.gigatools.main.wrappers
 
 import com.github.ttftcuts.gigatools.main.data.ToolData
-import com.github.ttftcuts.gigatools.main.tagging.DefinitionTag
 import com.github.ttftcuts.gigatools.main.tagging.TaggedDefinition
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.findPropertyAndInline
 import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit
 import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit.Companion.economicCategory
+import com.intellij.openapi.project.Project
 import icu.windea.pls.script.psi.ParadoxScriptBlockElement
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 
 class Megastructure(def: ParadoxScriptDefinitionElement) : TaggedDefinition(def), EconomicUnit {
-    // include valid tags from eco category
-    override val tags: MutableMap<String,DefinitionTag> by lazy {
-        val tags = super.tags
-
-        // for each tag in the eco category's tags, make sure it's compatible then add the equivalent mega tag
-        if (economicCategory != null) {
-            ecoTags@ for (ecoTag in economicCategory!!.tags.values) {
-                if (tags.contains(ecoTag.name)) {
-                    continue
-                }
-                if (ecoTag.incompatibleList == null) {
-                    continue
-                }
-                for (incompatible in ecoTag.incompatibleList) {
-                    if (tags.keys.contains(incompatible)) {
-                        continue@ecoTags
-                    }
-                }
-                val matching = ToolData.definitionTags["megastructure"]?.get(ecoTag.name) ?: continue@ecoTags
-                tags[ecoTag.name] = matching
-            }
-        }
-
-        // TODO: do first stage and last stage tag stuff here
-
-        tags
-    }
+    // what mega family (build chain) does this mega belong to?
+    // e.g. "is this a dyson sphere?"
+    var families: MutableSet<Megastructure> = mutableSetOf()
 
     val upgradeFrom : Set<Megastructure> by lazy {
         val upgradeData = def.findPropertyAndInline("upgrade_from") ?: return@lazy setOf()
@@ -45,7 +21,11 @@ class Megastructure(def: ParadoxScriptDefinitionElement) : TaggedDefinition(def)
         val upgradeBlock = upgradeElement.propertyValue
         if (upgradeBlock !is ParadoxScriptBlockElement) { return@lazy setOf() }
 
-        upgradeBlock.valueList.mapNotNull { v -> println("in ${def.name}: $v, ${v.javaClass}"); resolve(def.project, resolver(v.value)) }.toSet()
+        upgradeBlock.valueList.mapNotNull {
+            v ->
+            //println("in ${def.name}: $v, ${v.javaClass}");
+            resolve(def.project, resolver(v.value))
+        }.toSet()
     }
 
     val upgradeTo : Set<Megastructure> by lazy {
@@ -53,5 +33,92 @@ class Megastructure(def: ParadoxScriptDefinitionElement) : TaggedDefinition(def)
         cache.values.filterNotNull().filter { e -> (e != this) && e.upgradeFrom.contains(this) }.toSet()
     }
 
-    companion object: WrapperCompanion<Megastructure>("megastructure", ::Megastructure)
+    fun getFamilyName(): String? {
+        if (families.isEmpty()) { return null }
+        val first = families.first()
+        val familyNameRaw = first.name
+
+        if (ToolData.megaFamilyNames.contains(familyNameRaw)) {
+            return ToolData.megaFamilyNames[familyNameRaw]
+        }
+
+        return familyNameRaw.replaceFirst("(?<=\\w)_\\d\\w*".toRegex(), "")
+    }
+
+    companion object: WrapperCompanion<Megastructure>("megastructure", ::Megastructure) {
+        val allFamilies: MutableMap<Megastructure, MutableSet<Megastructure>> = mutableMapOf()
+
+        fun deriveAllTags(project: Project) {
+            val allMegaTags = ToolData.getTagsForType("megastructure")
+            val firstStageTag = allMegaTags["first_stage"] ?: error("first_stage megastructure tag missing!")
+            val finalStageTag = allMegaTags["final_stage"] ?: error("final_stage megastructure tag missing!")
+
+            // get every mega
+            resolveAll(project)
+
+            // base sweep, for stuff all megas should check
+            for(mega in cache.values.filterNotNull()) {
+
+                // inherit tags from economic category
+                if (mega.economicCategory != null) {
+                    ecoTags@ for (ecoTag in mega.economicCategory!!.tags.values) {
+                        if (mega.hasTags(ecoTag.name, includeDerived = false)) {
+                            continue
+                        }
+                        if (ecoTag.incompatibleList == null) {
+                            continue
+                        }
+                        if (mega.hasAnyTags(*ecoTag.incompatibleList.toTypedArray(), includeDerived = false) ) {
+                            continue@ecoTags
+                        }
+                        val matching = allMegaTags[ecoTag.name] ?: continue@ecoTags
+                        mega.derivedTags[ecoTag.name] = matching
+                    }
+                }
+            }
+
+            // find all first stage megas and propagate forward family membership
+            val firstStages = cache.values.filterNotNull().filter { mega ->
+                mega.upgradeFrom.isEmpty() &&
+                mega.upgradeTo.isNotEmpty() &&
+                !mega.hasAnyTags("technical", "ruined", "dummy_first_stage")
+            }
+            for (firstStage in firstStages) {
+                firstStage.addDerivedTag(firstStageTag)
+                allFamilies[firstStage] = mutableSetOf()
+                val family = allFamilies[firstStage]!!
+
+                val toProcess = mutableSetOf(firstStage)
+                val processed: MutableSet<Megastructure> = mutableSetOf()
+
+                while(toProcess.isNotEmpty()) {
+                    val mega = toProcess.first()
+                    toProcess.remove(mega)
+                    if (processed.contains(mega)) { continue }
+                    processed.add(mega)
+
+                    if (mega.families.isNotEmpty()) {
+                        println("Warning: Adding mega [${mega.name}] to family [${firstStage.name}], but it already belongs to other families: ${mega.families}")
+                    }
+                    mega.families.add(firstStage)
+                    family.add(mega)
+
+                    val nonTechnicalUpgradeTo = mega.upgradeTo.filter { e -> !e.hasAnyTags("technical") }
+
+                    if (mega.hasTags("force_final_stage") || nonTechnicalUpgradeTo.isEmpty()) {
+                        mega.addDerivedTag(finalStageTag)
+                    }
+                    else if (!mega.hasTags("force_final_stage")) {
+                        toProcess.addAll(nonTechnicalUpgradeTo)
+                    }
+                }
+            }
+        }
+
+        // also clear families map on cache clear
+        override fun clearCache() {
+            cache.clear()
+            allFamilies.clear()
+        }
+    }
 }

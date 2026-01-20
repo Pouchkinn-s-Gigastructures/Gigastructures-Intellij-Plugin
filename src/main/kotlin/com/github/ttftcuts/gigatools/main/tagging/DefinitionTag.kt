@@ -22,7 +22,8 @@ class DefinitionTag(val name: String, val shortDesc: String, val fullDesc: Strin
     }
 
     override fun toString(): String {
-        return "DefinitionTag( \"${name.escapeIfNeeded()}\" | \"${shortDesc.escapeIfNeeded()}\" | \"${fullDesc.escapeIfNeeded()}\" )"
+        //return "DefinitionTag( \"${name.escapeIfNeeded()}\" | \"${shortDesc.escapeIfNeeded()}\" | \"${fullDesc.escapeIfNeeded()}\" )"
+        return "DefinitionTag( \"${name.escapeIfNeeded()}\" )"
     }
 
     companion object {

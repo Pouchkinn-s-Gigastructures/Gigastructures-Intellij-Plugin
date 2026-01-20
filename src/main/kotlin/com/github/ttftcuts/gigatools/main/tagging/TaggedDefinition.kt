@@ -7,18 +7,25 @@ import icu.windea.pls.lang.search.selector.*
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 
 open class TaggedDefinition(val def: ParadoxScriptDefinitionElement) {
-    open val tags: MutableMap<String,DefinitionTag> by lazy { DefinitionTag.getTags(def)?.associate { tag -> tag.name to tag }?.toMutableMap() ?: mutableMapOf() }
+    open val tags: Map<String,DefinitionTag> by lazy { DefinitionTag.getTags(def)?.associate { tag -> tag.name to tag }?.toMap() ?: mapOf() }
+    val derivedTags: MutableMap<String,DefinitionTag> = mutableMapOf()
 
     val name get() = def.name
 
     // does this definition have EVERY listed tag
-    fun hasTags(vararg tagsToCheck : String) : Boolean {
+    fun hasTags(vararg tagsToCheck : String, includeDerived: Boolean = true) : Boolean {
+        if (includeDerived && derivedTags.keys.containsAll((tagsToCheck.toList()))) {
+            return true
+        }
         return tags.keys.containsAll(tagsToCheck.toList())
     }
 
     // does this definition have ANY listed tag
-    fun hasAnyTags(vararg tagsToCheck : String) : Boolean {
+    fun hasAnyTags(vararg tagsToCheck : String, includeDerived: Boolean = true) : Boolean {
         for(tag in tagsToCheck) {
+            if (includeDerived && derivedTags.containsKey(tag)) {
+                return true
+            }
             if (tags.containsKey(tag)) {
                 return true
             }
@@ -28,6 +35,11 @@ open class TaggedDefinition(val def: ParadoxScriptDefinitionElement) {
 
     override fun toString(): String {
         return "(${this.javaClass.simpleName}: ${def.name})"
+    }
+
+    fun addDerivedTag(tag: DefinitionTag) {
+        if (derivedTags.containsKey(tag.name)) { return }
+        derivedTags[tag.name] = tag
     }
 
     fun isVanilla(): Boolean { return def.isVanilla() }

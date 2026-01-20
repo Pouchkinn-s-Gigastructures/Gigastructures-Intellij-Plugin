@@ -1,12 +1,9 @@
 package com.github.ttftcuts.gigatools.actions
 
 import com.github.ttftcuts.gigatools.main.data.ToolData
-import com.github.ttftcuts.gigatools.main.lists.ListBuilders
-import com.github.ttftcuts.gigatools.main.tagging.TaggedDefinition
 import com.github.ttftcuts.gigatools.main.util.EditorUtils.showMessage
-import com.github.ttftcuts.gigatools.main.util.PsiUtils
+import com.github.ttftcuts.gigatools.main.wrappers.EconomicCategory
 import com.github.ttftcuts.gigatools.main.wrappers.Megastructure
-import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit.Companion.economicCategory
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.WriteCommandAction
@@ -37,12 +34,25 @@ class RegenMegaCategoryLists : DumbAwareAction() {
         WriteCommandAction.writeCommandAction(project).withName(NAME).run<Throwable> {
 
             // reset cache
+            EconomicCategory.clearCache()
             Megastructure.regenerateCache(project)
+            Megastructure.deriveAllTags(project)
 
-            val nexus = Megastructure.get("think_tank_0")
-            println(nexus?.name)
-            println(nexus?.economicCategory)
-            println(nexus?.tags)
+//            val nexus = Megastructure.get("think_tank_0")
+//            println(nexus?.name)
+//            println(nexus?.economicCategory)
+//            println(nexus?.tags)
+//            println(nexus?.derivedTags)
+
+            println(Megastructure.allFamilies.keys.map { mega -> "${mega.name} -> ${mega.getFamilyName()}" })
+            println(Megastructure.allFamilies)
+            val familyMap: MutableMap<String, Megastructure> = mutableMapOf()
+            
+            for (mega in Megastructure.allFamilies.keys) {
+                val name = mega.getFamilyName() ?: continue
+                if (familyMap.contains(name)) { println("Warning: ${mega.name} maps to family name $name already occupied by ${familyMap[name]}") }
+                familyMap[name] = mega
+            }
 
 
 //            val trigger = TaggedDefinition.resolve(project, "scripted_trigger", "another_test_trigger")

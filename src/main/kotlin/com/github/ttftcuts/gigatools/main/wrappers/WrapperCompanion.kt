@@ -13,7 +13,7 @@ open class WrapperCompanion<T: TaggedDefinition>(val typeExpression: String, val
         resolveAll(project)
     }
 
-    fun clearCache() { cache.clear() }
+    open fun clearCache() { cache.clear() }
     fun get(id: String): T? { return cache.get(id) }
     fun resolve(project: Project, id: String): T? { return cache.resolve(project, id) }
     fun resolveAll(project: Project) { cache.resolveAll(project) }
