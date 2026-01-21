@@ -4,6 +4,7 @@ import com.github.ttftcuts.gigatools.main.lists.ListFormat
 import com.github.ttftcuts.gigatools.main.tagging.DefinitionTag
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.getValueAndCast
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.resolveKeyValues
+import com.github.ttftcuts.gigatools.main.wrappers.Megastructure
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
@@ -49,7 +50,11 @@ object ToolData {
                 pair.keyText to ListFormat.fromYAMLKeyValue(pair)
             }
 
-            megaFamilyNames = root.getValueAndCast<YAMLMapping>("mega_family_names").resolveKeyValues().associate { pair ->
+            // mega family data - name and ancestor overrides
+            MegaFamilies.ancestorOverrides = root.getValueAndCast<YAMLMapping>("mega_families").getValueAndCast<YAMLMapping>("ancestor_overrides").resolveKeyValues().associate {
+                pair -> pair.keyText to pair.valueText
+            }
+            MegaFamilies.nameOverrides = root.getValueAndCast<YAMLMapping>("mega_families").getValueAndCast<YAMLMapping>("name_overrides").resolveKeyValues().associate { pair ->
                 pair.keyText to pair.valueText
             }
 
@@ -82,7 +87,10 @@ object ToolData {
     }
     lateinit var listFormats: Map<String, ListFormat>
 
-    lateinit var megaFamilyNames: Map<String, String>
+    object MegaFamilies {
+        lateinit var ancestorOverrides: Map<String, String>
+        lateinit var nameOverrides: Map<String, String>
+    }
 
     object EcoCategoryLoc {
         lateinit var includeCategories: Set<String>

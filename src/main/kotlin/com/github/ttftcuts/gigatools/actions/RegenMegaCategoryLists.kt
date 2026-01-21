@@ -44,15 +44,11 @@ class RegenMegaCategoryLists : DumbAwareAction() {
 //            println(nexus?.tags)
 //            println(nexus?.derivedTags)
 
-            println(Megastructure.allFamilies.keys.map { mega -> "${mega.name} -> ${mega.getFamilyName()}" })
-            println(Megastructure.allFamilies)
+            println(Megastructure.allFamilies.keys)
+            println(Megastructure.allFamilies.map { entry -> "${entry.key}=${entry.value.map { mega -> mega.name }}" })
             val familyMap: MutableMap<String, Megastructure> = mutableMapOf()
-            
-            for (mega in Megastructure.allFamilies.keys) {
-                val name = mega.getFamilyName() ?: continue
-                if (familyMap.contains(name)) { println("Warning: ${mega.name} maps to family name $name already occupied by ${familyMap[name]}") }
-                familyMap[name] = mega
-            }
+
+            println(Megastructure.cache.values.filterNotNull().filter { mega -> mega.megaFamily == null }.map { mega -> mega.name })
 
 
 //            val trigger = TaggedDefinition.resolve(project, "scripted_trigger", "another_test_trigger")

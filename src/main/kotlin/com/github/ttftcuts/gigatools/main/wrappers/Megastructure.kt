@@ -12,7 +12,7 @@ import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 class Megastructure(def: ParadoxScriptDefinitionElement) : TaggedDefinition(def), EconomicUnit {
     // what mega family (build chain) does this mega belong to?
     // e.g. "is this a dyson sphere?"
-    var families: MutableSet<Megastructure> = mutableSetOf()
+    var megaFamily: String? = null
 
     val upgradeFrom : Set<Megastructure> by lazy {
         val upgradeData = def.findPropertyAndInline("upgrade_from") ?: return@lazy setOf()
@@ -33,20 +33,23 @@ class Megastructure(def: ParadoxScriptDefinitionElement) : TaggedDefinition(def)
         cache.values.filterNotNull().filter { e -> (e != this) && e.upgradeFrom.contains(this) }.toSet()
     }
 
-    fun getFamilyName(): String? {
-        if (families.isEmpty()) { return null }
-        val first = families.first()
-        val familyNameRaw = first.name
-
-        if (ToolData.megaFamilyNames.contains(familyNameRaw)) {
-            return ToolData.megaFamilyNames[familyNameRaw]
-        }
-
-        return familyNameRaw.replaceFirst("(?<=\\w)_\\d\\w*".toRegex(), "")
-    }
-
     companion object: WrapperCompanion<Megastructure>("megastructure", ::Megastructure) {
-        val allFamilies: MutableMap<Megastructure, MutableSet<Megastructure>> = mutableMapOf()
+        val allFamilies: MutableMap<String, MutableSet<Megastructure>> = mutableMapOf()
+
+        fun familyName(mega: Megastructure): String {
+            val familyNameRaw = mega.name
+
+            if (ToolData.MegaFamilies.nameOverrides.contains(familyNameRaw)) {
+                return ToolData.MegaFamilies.nameOverrides[familyNameRaw]!!
+            }
+            val regex = Regex("(\\w+?)(?:_(?:ruined|\\d)\\w*)?")
+            val result = regex.matchEntire(familyNameRaw)
+            //println(result?.groups)
+
+            val familyName = result?.groups[1]?.value
+
+            return familyName ?: error("Unable to generate proper family name for mega $familyNameRaw")
+        }
 
         fun deriveAllTags(project: Project) {
             val allMegaTags = ToolData.getTagsForType("megastructure")
@@ -81,13 +84,23 @@ class Megastructure(def: ParadoxScriptDefinitionElement) : TaggedDefinition(def)
             val firstStages = cache.values.filterNotNull().filter { mega ->
                 mega.upgradeFrom.isEmpty() &&
                 mega.upgradeTo.isNotEmpty() &&
-                !mega.hasAnyTags("technical", "ruined", "dummy_first_stage")
+                !mega.hasAnyTags("technical", "dummy_first_stage")
             }
             for (firstStage in firstStages) {
                 firstStage.addDerivedTag(firstStageTag)
-                allFamilies[firstStage] = mutableSetOf()
-                val family = allFamilies[firstStage]!!
 
+                // get any ancestor override or start with this mega
+                val ancestorOverride = ToolData.MegaFamilies.ancestorOverrides[firstStage.name]
+                val ancestor = if (ancestorOverride != null) resolve(project, ancestorOverride) ?: firstStage else firstStage
+                val ancestorFamilyName = familyName(ancestor)
+
+                // set up family object if it's not done already
+                if (!allFamilies.contains(ancestorFamilyName)) {
+                    allFamilies[ancestorFamilyName] = mutableSetOf()
+                }
+                val family = allFamilies[ancestorFamilyName]!!
+
+                // process descendants
                 val toProcess = mutableSetOf(firstStage)
                 val processed: MutableSet<Megastructure> = mutableSetOf()
 
@@ -97,11 +110,13 @@ class Megastructure(def: ParadoxScriptDefinitionElement) : TaggedDefinition(def)
                     if (processed.contains(mega)) { continue }
                     processed.add(mega)
 
-                    if (mega.families.isNotEmpty()) {
-                        println("Warning: Adding mega [${mega.name}] to family [${firstStage.name}], but it already belongs to other families: ${mega.families}")
+                    if (mega.megaFamily == null) {
+                        mega.megaFamily = ancestorFamilyName
+                        family.add(mega)
+                    } else if (mega.megaFamily != ancestorFamilyName) {
+                        // this shouldn't happen if stuff is arranged properly
+                        println("Warning: Attempted to add mega [${mega.name}] to family [$ancestorFamilyName], but it already belongs to ${mega.megaFamily}")
                     }
-                    mega.families.add(firstStage)
-                    family.add(mega)
 
                     val nonTechnicalUpgradeTo = mega.upgradeTo.filter { e -> !e.hasAnyTags("technical") }
 
