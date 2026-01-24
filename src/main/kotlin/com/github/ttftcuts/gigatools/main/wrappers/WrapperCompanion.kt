@@ -1,11 +1,11 @@
 package com.github.ttftcuts.gigatools.main.wrappers
 
-import com.github.ttftcuts.gigatools.main.tagging.DefinitionCache
-import com.github.ttftcuts.gigatools.main.tagging.TaggedDefinition
+import com.github.ttftcuts.gigatools.main.definitions.DefinitionCache
+import com.github.ttftcuts.gigatools.main.definitions.ModularDefinition
 import com.intellij.openapi.project.Project
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 
-open class WrapperCompanion<T: TaggedDefinition>(val typeExpression: String, val factory: (ParadoxScriptDefinitionElement) -> T) {
+open class WrapperCompanion<T: ModularDefinition>(val typeExpression: String, val factory: (ParadoxScriptDefinitionElement) -> T) {
     val cache = DefinitionCache<T>(typeExpression, factory)
 
     fun regenerateCache(project: Project) {

@@ -1,4 +1,4 @@
-package com.github.ttftcuts.gigatools.main.tagging
+package com.github.ttftcuts.gigatools.main.definitions
 
 import com.intellij.openapi.project.Project
 import icu.windea.pls.lang.search.ParadoxDefinitionSearch
@@ -7,7 +7,7 @@ import icu.windea.pls.lang.search.selector.distinctByName
 import icu.windea.pls.lang.search.selector.selector
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 
-class DefinitionCache<T : TaggedDefinition>(val typeExpression: String, val factory: (ParadoxScriptDefinitionElement) -> T ) {
+class DefinitionCache<T : ModularDefinition>(val typeExpression: String, val factory: (ParadoxScriptDefinitionElement) -> T ) {
     private var resolvedAll = false
     val cache : MutableMap<String, T?> = mutableMapOf()
 

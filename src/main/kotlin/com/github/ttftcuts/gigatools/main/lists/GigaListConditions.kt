@@ -1,6 +1,6 @@
 package com.github.ttftcuts.gigatools.main.lists
 
-import com.github.ttftcuts.gigatools.main.tagging.DefinitionTag
+import com.github.ttftcuts.gigatools.main.definitions.DefinitionTag
 import icu.windea.pls.lang.search.ParadoxDefinitionSearch
 import icu.windea.pls.lang.search.selector.*
 import icu.windea.pls.script.psi.*

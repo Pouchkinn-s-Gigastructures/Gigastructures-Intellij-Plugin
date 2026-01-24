@@ -1,10 +1,9 @@
 package com.github.ttftcuts.gigatools.main.data
 
 import com.github.ttftcuts.gigatools.main.lists.ListFormat
-import com.github.ttftcuts.gigatools.main.tagging.DefinitionTag
+import com.github.ttftcuts.gigatools.main.definitions.DefinitionTag
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.getValueAndCast
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.resolveKeyValues
-import com.github.ttftcuts.gigatools.main.wrappers.Megastructure
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager

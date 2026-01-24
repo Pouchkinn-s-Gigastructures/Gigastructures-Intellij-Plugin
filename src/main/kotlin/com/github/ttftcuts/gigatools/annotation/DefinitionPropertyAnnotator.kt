@@ -1,7 +1,7 @@
 package com.github.ttftcuts.gigatools.annotation
 
 import com.github.ttftcuts.gigatools.main.data.ToolData
-import com.github.ttftcuts.gigatools.main.tagging.DefinitionTag
+import com.github.ttftcuts.gigatools.main.definitions.DefinitionTag
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.lang.annotation.AnnotationHolder

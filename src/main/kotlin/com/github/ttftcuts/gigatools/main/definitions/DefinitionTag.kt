@@ -1,4 +1,4 @@
-package com.github.ttftcuts.gigatools.main.tagging
+package com.github.ttftcuts.gigatools.main.definitions
 
 import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
@@ -12,7 +12,6 @@ import io.ktor.http.escapeIfNeeded
 import org.jetbrains.yaml.psi.YAMLKeyValue
 import org.jetbrains.yaml.psi.YAMLMapping
 import org.jetbrains.yaml.psi.YAMLScalar
-import org.jetbrains.yaml.psi.YAMLScalarText
 import org.jetbrains.yaml.psi.YAMLSequence
 
 class DefinitionTag(val name: String, val shortDesc: String, val fullDesc: String, val incompatibleList: List<String>?) {
