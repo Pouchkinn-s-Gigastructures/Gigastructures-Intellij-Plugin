@@ -1,11 +1,10 @@
-package com.github.ttftcuts.gigatools.main.definitions.modules
+package com.github.ttftcuts.gigatools.main.definitions.properties
 
-import com.github.ttftcuts.gigatools.main.definitions.DefinitionTag
 import com.github.ttftcuts.gigatools.main.definitions.DefinitionHolder
-import com.github.ttftcuts.gigatools.main.definitions.ModuleCompanion
+import com.github.ttftcuts.gigatools.main.definitions.PropertyCompanion
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 
-class TagModule(override val def: ParadoxScriptDefinitionElement) : DefinitionHolder, ITagModule {
+class TagProperty(override val def: ParadoxScriptDefinitionElement) : DefinitionHolder, ITagProperty {
     override val tags: Map<String,DefinitionTag> by lazy { DefinitionTag.getTags(def)?.associate { tag -> tag.name to tag }?.toMap() ?: mapOf() }
     override val derivedTags: MutableMap<String,DefinitionTag> = mutableMapOf()
 
@@ -34,10 +33,10 @@ class TagModule(override val def: ParadoxScriptDefinitionElement) : DefinitionHo
         derivedTags[tag.name] = tag
     }
 
-    companion object: ModuleCompanion
+    companion object: PropertyCompanion("Tags")
 }
 
-interface ITagModule: DefinitionHolder {
+interface ITagProperty: DefinitionHolder {
     val tags: Map<String,DefinitionTag>
     val derivedTags: MutableMap<String,DefinitionTag>
 

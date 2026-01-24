@@ -1,7 +1,7 @@
 package com.github.ttftcuts.gigatools.main.wrappers
 
 import com.github.ttftcuts.gigatools.main.data.ToolData
-import com.github.ttftcuts.gigatools.main.definitions.ModularDefinition
+import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.findPropertyAndInline
 import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit
 import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit.Companion.economicCategory
@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project
 import icu.windea.pls.script.psi.ParadoxScriptBlockElement
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 
-class Megastructure(def: ParadoxScriptDefinitionElement) : ModularDefinition(def), EconomicUnit {
+class Megastructure(def: ParadoxScriptDefinitionElement) : Definition(def), EconomicUnit {
     // what mega family (build chain) does this mega belong to?
     // e.g. "is this a dyson sphere?"
     var megaFamily: String? = null

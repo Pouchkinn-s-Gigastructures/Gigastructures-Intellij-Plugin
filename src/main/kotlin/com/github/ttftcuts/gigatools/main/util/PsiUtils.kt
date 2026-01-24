@@ -1,5 +1,7 @@
 package com.github.ttftcuts.gigatools.main.util
 
+import com.github.ttftcuts.gigatools.annotation.DefinitionPropertyAnnotator
+import com.github.ttftcuts.gigatools.main.definitions.properties.DefinitionTag
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiComment
@@ -44,6 +46,53 @@ object PsiUtils {
                 return prevElement
             } else {
                 prevElement = prevElement.prevSibling
+            }
+        }
+        return null
+    }
+
+    fun nextNonWhiteSpaceSiblingLine(element: PsiElement): PsiElement? {
+        var nextElement: PsiElement? = element.nextSibling ?: element.parent.nextSibling
+
+        while (nextElement != null) {
+            if (nextElement is ParadoxScriptRootBlock) {
+                nextElement = nextElement.firstChild
+            } else if (nextElement !is PsiWhiteSpace) {
+                return nextElement
+            } else if (nextElement.text.count { c -> c == '\n' } == 1){
+                nextElement = nextElement.nextSibling
+            } else {
+                return null
+            }
+        }
+        return null
+    }
+
+    fun prevNonWhiteSpaceSiblingLine(element: PsiElement): PsiElement? {
+        var prevElement: PsiElement? = element.prevSibling ?: element.parent.prevSibling
+
+        while (prevElement != null) {
+            if (prevElement !is PsiWhiteSpace) {
+                return prevElement
+            } else if (prevElement.text.count { c -> c == '\n' } == 1) {
+                prevElement = prevElement.prevSibling
+            } else {
+                return null
+            }
+        }
+        return null
+    }
+
+    fun findAssociatedDefinition(element: PsiElement): ParadoxScriptDefinitionElement? {
+        var nextElement: PsiElement? = nextNonWhiteSpaceSiblingLine(element)
+
+        while (nextElement != null) {
+            if (nextElement is PsiComment && nextElement.text.startsWith(DefinitionPropertyAnnotator.PREFIX)) {
+                nextElement = nextNonWhiteSpaceSiblingLine(nextElement)
+            } else if (nextElement is ParadoxScriptDefinitionElement) {
+                return nextElement
+            } else {
+                return null
             }
         }
         return null

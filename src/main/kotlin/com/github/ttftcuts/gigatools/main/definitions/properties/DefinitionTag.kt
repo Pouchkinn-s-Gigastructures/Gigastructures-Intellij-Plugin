@@ -1,4 +1,4 @@
-package com.github.ttftcuts.gigatools.main.definitions
+package com.github.ttftcuts.gigatools.main.definitions.properties
 
 import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
@@ -6,7 +6,7 @@ import com.github.ttftcuts.gigatools.main.util.YAMLUtils.asText
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.getItemsAndCast
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.getValueAndCast
 import com.intellij.psi.PsiComment
-import icu.windea.pls.lang.*
+import icu.windea.pls.lang.definitionInfo
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 import io.ktor.http.escapeIfNeeded
 import org.jetbrains.yaml.psi.YAMLKeyValue
@@ -27,7 +27,8 @@ class DefinitionTag(val name: String, val shortDesc: String, val fullDesc: Strin
 
     companion object {
         const val PREFIX = "## Tags:"
-        val pattern by lazy { Regex("(?<=\\s)@(\\S+)") }
+        //val pattern by lazy { Regex("(?<=\\s)@(\\S+)") }
+        val pattern by lazy { Regex("@(\\S+)\\b") }
 
         fun fromYAMLKeyValue(tagPair: YAMLKeyValue) : DefinitionTag {
             val name = tagPair.keyText

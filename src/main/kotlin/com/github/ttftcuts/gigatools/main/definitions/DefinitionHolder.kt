@@ -10,7 +10,5 @@ interface DefinitionHolder {
     val name get() = def.name
 }
 
-interface ModuleCompanion {
-    fun validForDefinitionType(type: String): Boolean { return true }
-}
+
 
