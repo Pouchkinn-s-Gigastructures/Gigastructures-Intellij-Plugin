@@ -14,9 +14,9 @@ import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 open class PropertyCompanion(val prefix: String, val description: String = "") {
     fun validForDefinitionType(type: String): Boolean { return true }
 
-    fun annotate(element: PsiElement, holder: AnnotationHolder, definition: ParadoxScriptDefinitionElement?, text: String, textOffset: Int) {
+    fun annotate(element: PsiElement, holder: AnnotationHolder, definition: ParadoxScriptDefinitionElement?, definitionType: String, text: String, textOffset: Int) {
         //println("p: $prefix@$textOffset: $text")
-        val elementType = definition?.definitionInfo?.typeConfig?.name ?: "unknown"
+        val elementType = definition?.definitionInfo?.typeConfig?.name ?: definitionType
         val validTags = ToolData.definitionTags[elementType] ?: mapOf()
 
         val startOffset = element.textRange.startOffset + textOffset
@@ -32,7 +32,7 @@ open class PropertyCompanion(val prefix: String, val description: String = "") {
             val propertyRange = TextRange.from(startOffset + property.range.first, property.range.last - property.range.first + 1)
             val propertyName = property.value
 
-            if (definition == null || validTags.containsKey(propertyName)) {
+            if (validTags.containsKey(propertyName)) {
                 holder
                     .newAnnotation(HighlightSeverity.INFORMATION, validTags[propertyName]?.fullDesc ?: "")
                     .range(propertyRange)

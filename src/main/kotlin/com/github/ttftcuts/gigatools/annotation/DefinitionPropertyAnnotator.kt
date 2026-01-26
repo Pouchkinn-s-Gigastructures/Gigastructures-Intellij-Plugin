@@ -11,37 +11,39 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import icu.windea.pls.lang.definitionInfo
+import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 import icu.windea.pls.script.psi.ParadoxScriptFile
 import icu.windea.pls.script.psi.ParadoxScriptRootBlock
 import kotlinx.html.COL
 
 class DefinitionPropertyAnnotator : Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-        //println(element.text)
         // only comments
         if (element !is PsiComment) { return }
         // only top level elements
-        if (element.parent !is ParadoxScriptRootBlock && element.parent !is ParadoxScriptFile) { return }
+        if (element.parent !is ParadoxScriptRootBlock) { return }
 
+        // value of the comment
         var text = element.text
         // only specially annotated lines
         if (!text.startsWith(PREFIX)) { return }
+
+        // only if there are script definitions in the file
+        if (element.parent.children.isEmpty() || element.parent.children.first() !is ParadoxScriptDefinitionElement) { return }
+
+        // use the first child to determine what kind of definitions this file "should" have
+        val fileDefType = (element.parent.children.first() as ParadoxScriptDefinitionElement).definitionInfo?.typeConfig?.name ?: "unknown"
+
+        // snip down the text range
         var textOffset = PREFIX.length
         text = text.substring(textOffset)
-        //println("STARTED")
 
         // find whether this comment is attached to a definition
         val definition = PsiUtils.findAssociatedDefinition(element)
-        val wholeFile = text.startsWith(FILE)
-        if (definition == null) {
-            if (!wholeFile) { return }
-            // Definition is null, and we start with the file prefix, so this is a whole file definition
-            textOffset += FILE.length
-            text = text.substring(FILE.length)
-        } else {
-            if (wholeFile) { return }
-            // Definition isn't null, and we don't start with the file prefix, so this is a local definition
-        }
+        // is this a "whole file" property?
+        val wholeFile = (definition == null) && (element.textRange.endOffset < element.parent.children.first().textRange.startOffset)
+        // if we're not attached and not whole file, bail
+        if (definition == null && !wholeFile) { return }
 
         // determine property type
         var propertyType: PropertyCompanion? = null
@@ -78,10 +80,16 @@ class DefinitionPropertyAnnotator : Annotator {
 
         // highlight the prefix to say we're ok
         val prefixRange = TextRange.from(element.textRange.startOffset, textOffset)
-        holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(prefixRange).textAttributes(GigaToolsAttributesKeys.PROPERTY_LINE_KEY).create()
+        if (wholeFile) {
+            holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(prefixRange)
+                .textAttributes(GigaToolsAttributesKeys.PROPERTY_LINE_KEY_WHOLE_FILE).create()
+        } else {
+            holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(prefixRange)
+                .textAttributes(GigaToolsAttributesKeys.PROPERTY_LINE_KEY).create()
+        }
 
         // hand over processing to the property itself
-        propertyType.annotate(element, holder, definition, text, textOffset)
+        propertyType.annotate(element, holder, definition, fileDefType, text, textOffset)
 
 //        // get next non-whitespace element or bail
 //        val nextElement: PsiElement = PsiUtils.nextNonWhiteSpaceSibling(element) ?: return
