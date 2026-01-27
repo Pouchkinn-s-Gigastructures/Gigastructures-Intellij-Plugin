@@ -1,6 +1,7 @@
 package com.github.ttftcuts.gigatools.main.definitions.properties
 
 import com.github.ttftcuts.gigatools.main.data.ToolData
+import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.asText
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.getItemsAndCast
@@ -26,8 +27,6 @@ class DefinitionTag(val name: String, val shortDesc: String, val fullDesc: Strin
     }
 
     companion object {
-        const val PREFIX = "## Tags:"
-        //val pattern by lazy { Regex("(?<=\\s)@(\\S+)") }
         val pattern by lazy { Regex("@(\\S+)\\b") }
 
         fun fromYAMLKeyValue(tagPair: YAMLKeyValue) : DefinitionTag {
@@ -41,23 +40,32 @@ class DefinitionTag(val name: String, val shortDesc: String, val fullDesc: Strin
         }
 
         fun getTags(definition: ParadoxScriptDefinitionElement) : Set<DefinitionTag>? {
-            // get the previous comment
-            val prevElement = PsiUtils.prevNonWhiteSpaceSibling(definition)
-            if (prevElement !is PsiComment) { return null }
+            // get both property sets
+            val data = Definition.getAttachedProperties(definition).firstOrNull { p -> p.type == TagProperty }
+            val fileData = Definition.getWholeFileProperties(definition).firstOrNull { p -> p.type == TagProperty }
 
-            // check that it starts with the prefix
-            val text = prevElement.text
-            if (!text.startsWith(PREFIX)) { return null }
+            // get valid tags for the definition's type
+            val definitionType = Definition.getDefinitionType(definition)
+            val validTags = ToolData.definitionTags[definitionType] ?: return null
 
-            // find valid tags
-            val elementType = definition.definitionInfo?.typeConfig?.name ?: "unknown"
-            val validTags = ToolData.definitionTags[elementType] ?: return null
+            // fill set of found tags
+            val tags : MutableSet<DefinitionTag> = mutableSetOf()
+            if (data != null) {
+                tags.addAll(getTagsFromString(data.propertyText, validTags))
+            }
+            if (fileData != null) {
+                tags.addAll(getTagsFromString(fileData.propertyText, validTags))
+            }
 
+            return tags
+        }
+
+        fun getTagsFromString(input: String, validTags: Map<String, DefinitionTag>): Set<DefinitionTag> {
             // array for found tags
             val tags : MutableSet<DefinitionTag> = mutableSetOf()
 
             // check each match against the tags
-            val propertyMatches = pattern.findAll(text, PREFIX.length)
+            val propertyMatches = pattern.findAll(input)
             for(match in propertyMatches) {
                 // won't be null, or it wouldn't match the pattern
                 val tag = match.groups[1]!!.value
@@ -69,6 +77,7 @@ class DefinitionTag(val name: String, val shortDesc: String, val fullDesc: Strin
             }
             return tags
         }
+
         fun getTagNames(definition: ParadoxScriptDefinitionElement) : Set<String>? { return getTags(definition)?.map { tag -> tag.name }?.toSet() }
     }
 }

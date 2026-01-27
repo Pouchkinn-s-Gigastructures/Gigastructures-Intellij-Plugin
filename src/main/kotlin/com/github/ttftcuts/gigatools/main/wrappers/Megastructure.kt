@@ -84,7 +84,7 @@ class Megastructure(def: ParadoxScriptDefinitionElement) : Definition(def), Econ
             val firstStages = cache.values.filterNotNull().filter { mega ->
                 mega.upgradeFrom.isEmpty() &&
                 mega.upgradeTo.isNotEmpty() &&
-                !mega.hasAnyTags("technical", "dummy_first_stage")
+                !mega.hasAnyTags("technical", "dummy_first_stage", "placeholder")
             }
             for (firstStage in firstStages) {
                 firstStage.addDerivedTag(firstStageTag)

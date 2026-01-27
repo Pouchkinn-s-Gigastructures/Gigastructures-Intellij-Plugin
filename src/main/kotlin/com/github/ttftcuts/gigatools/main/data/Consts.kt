@@ -16,4 +16,9 @@ enum class EcoModifierDomain(name: String) {
 
 object Consts {
     val DefinitionPropertyTypes: Set<PropertyCompanion> = setOf( TagProperty )
+
+    object Property {
+        const val PREFIX: String = "## "
+        const val COLON: String = ": "
+    }
 }

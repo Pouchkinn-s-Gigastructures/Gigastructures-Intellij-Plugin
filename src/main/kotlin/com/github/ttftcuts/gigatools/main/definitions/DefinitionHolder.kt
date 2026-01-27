@@ -8,6 +8,7 @@ interface DefinitionHolder {
     fun isVanilla(): Boolean { return def.isVanilla() }
 
     val name get() = def.name
+
 }
 
 

@@ -1,9 +1,12 @@
 package com.github.ttftcuts.gigatools.actions
 
 import com.github.ttftcuts.gigatools.main.data.ToolData
+import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.github.ttftcuts.gigatools.main.util.EditorUtils.showMessage
+import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.github.ttftcuts.gigatools.main.wrappers.EconomicCategory
 import com.github.ttftcuts.gigatools.main.wrappers.Megastructure
+import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit.Companion.economicCategory
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.WriteCommandAction
@@ -35,10 +38,11 @@ class RegenMegaCategoryLists : DumbAwareAction() {
 
             // reset cache
             EconomicCategory.clearCache()
+            //Megastructure.clearCache()
             Megastructure.regenerateCache(project)
             Megastructure.deriveAllTags(project)
 
-//            val nexus = Megastructure.get("think_tank_0")
+//            val nexus = Megastructure.resolve(project, "think_tank_0")
 //            println(nexus?.name)
 //            println(nexus?.economicCategory)
 //            println(nexus?.tags)
@@ -48,7 +52,7 @@ class RegenMegaCategoryLists : DumbAwareAction() {
             println(Megastructure.allFamilies.map { entry -> "${entry.key}=${entry.value.map { mega -> mega.name }}" })
             val familyMap: MutableMap<String, Megastructure> = mutableMapOf()
 
-            println(Megastructure.cache.values.filterNotNull().filter { mega -> mega.megaFamily == null }.map { mega -> mega.name })
+            println(Megastructure.cache.values.filterNotNull().filter { mega -> mega.megaFamily == null && !mega.hasTags("placeholder") }.map { mega -> mega.name })
 
 
 //            val trigger = TaggedDefinition.resolve(project, "scripted_trigger", "another_test_trigger")

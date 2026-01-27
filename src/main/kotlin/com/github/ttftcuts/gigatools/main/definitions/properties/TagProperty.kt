@@ -1,7 +1,18 @@
 package com.github.ttftcuts.gigatools.main.definitions.properties
 
+import com.github.ttftcuts.gigatools.annotation.GigaToolsAttributesKeys
+import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.definitions.DefinitionHolder
 import com.github.ttftcuts.gigatools.main.definitions.PropertyCompanion
+import com.github.ttftcuts.gigatools.main.definitions.PropertyData
+import com.intellij.codeInsight.completion.CompletionParameters
+import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.codeInspection.ProblemHighlightType
+import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.util.TextRange
+import com.intellij.util.ProcessingContext
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 
 class TagProperty(override val def: ParadoxScriptDefinitionElement) : DefinitionHolder, ITagProperty {
@@ -33,7 +44,48 @@ class TagProperty(override val def: ParadoxScriptDefinitionElement) : Definition
         derivedTags[tag.name] = tag
     }
 
-    companion object: PropertyCompanion("Tags")
+    companion object: PropertyCompanion("Tags", "Tags for reference in other GigaTools functions, used to categorise where Stellaris does not.") {
+
+        override fun annotate( holder: AnnotationHolder, data: PropertyData ) {
+            //println("p: $prefix@$textOffset: $text")
+            val validTags = ToolData.definitionTags[data.definitionType] ?: mapOf()
+
+            val startOffset = data.element.textRange.startOffset + data.propertyTextOffset
+            val propertyMatches = DefinitionTag.pattern.findAll(data.propertyText)
+            for(match in propertyMatches) {
+                //println("match ${match.value}")
+                // the @ at the start
+                val markerRange = TextRange.from(startOffset + match.range.first, 1)
+                holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(markerRange).textAttributes(GigaToolsAttributesKeys.PROPERTY_KEY).create()
+
+                // won't be empty or null otherwise it wouldn't match the pattern
+                val property = match.groups[1]!!
+                val propertyRange = TextRange.from(startOffset + property.range.first, property.range.last - property.range.first + 1)
+                val propertyName = property.value
+
+                if (validTags.containsKey(propertyName)) {
+                    holder
+                        .newAnnotation(HighlightSeverity.INFORMATION, validTags[propertyName]?.fullDesc ?: "")
+                        .range(propertyRange)
+                        .textAttributes(GigaToolsAttributesKeys.PROPERTY_NAME_KEY)
+                        .create()
+                } else {
+                    holder
+                        .newAnnotation(HighlightSeverity.WARNING, "Unknown tag \"$propertyName\" for type ${data.definitionType}")
+                        .range(propertyRange)
+                        .highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
+                        .create()
+                }
+            }
+        }
+
+        override fun addCompletions( data: PropertyData, parameters: CompletionParameters, context: ProcessingContext, resultSet: CompletionResultSet ) {
+            // get the valid tags for the definition's type
+            val validTags = ToolData.definitionTags[data.definitionType] ?: return
+            // add all valid tags to the list, along with their descriptions
+            resultSet.addAllElements(validTags.keys.map { s -> LookupElementBuilder.create(s).withTypeText( validTags[s]?.shortDesc ) })
+        }
+    }
 }
 
 interface ITagProperty: DefinitionHolder {

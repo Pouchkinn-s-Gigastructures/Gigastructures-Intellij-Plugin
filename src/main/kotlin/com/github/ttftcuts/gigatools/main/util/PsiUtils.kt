@@ -1,6 +1,8 @@
 package com.github.ttftcuts.gigatools.main.util
 
 import com.github.ttftcuts.gigatools.annotation.DefinitionPropertyAnnotator
+import com.github.ttftcuts.gigatools.main.data.Consts
+import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.github.ttftcuts.gigatools.main.definitions.properties.DefinitionTag
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
@@ -87,7 +89,7 @@ object PsiUtils {
         var nextElement: PsiElement? = nextNonWhiteSpaceSiblingLine(element)
 
         while (nextElement != null) {
-            if (nextElement is PsiComment && nextElement.text.startsWith(DefinitionPropertyAnnotator.PREFIX)) {
+            if (Definition.isPropertyComment(nextElement)) {
                 nextElement = nextNonWhiteSpaceSiblingLine(nextElement)
             } else if (nextElement is ParadoxScriptDefinitionElement) {
                 return nextElement
