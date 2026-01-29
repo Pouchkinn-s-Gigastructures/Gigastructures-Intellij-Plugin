@@ -1,6 +1,7 @@
 package com.github.ttftcuts.gigatools.main.data
 
 import com.github.ttftcuts.gigatools.main.definitions.PropertyCompanion
+import com.github.ttftcuts.gigatools.main.definitions.properties.MegaFamilyProperty
 import com.github.ttftcuts.gigatools.main.definitions.properties.TagProperty
 
 enum class EcoModifierType(name: String) {
@@ -15,7 +16,10 @@ enum class EcoModifierDomain(name: String) {
 }
 
 object Consts {
-    val DefinitionPropertyTypes: Set<PropertyCompanion> = setOf( TagProperty )
+    val DefinitionPropertyTypes: Set<PropertyCompanion> = setOf(
+        TagProperty,
+        MegaFamilyProperty,
+    )
 
     object Property {
         const val PREFIX: String = "## "

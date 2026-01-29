@@ -72,4 +72,13 @@ object YAMLUtils {
         if (this is YAMLScalar) { return this.textValue }
         return this.name ?: error("Bad conversion to string")
     }
+
+    fun YAMLPsiElement.asBool() : Boolean {
+        if (this is YAMLKeyValue) { return this.value?.asBool() ?: error("Pair has no value") }
+        return when (this.asText()) {
+            "true" -> true
+            "false" -> false
+            else -> error("Bad conversion to bool")
+        }
+    }
 }

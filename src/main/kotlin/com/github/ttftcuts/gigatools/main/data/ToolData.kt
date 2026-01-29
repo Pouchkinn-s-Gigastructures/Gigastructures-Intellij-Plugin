@@ -50,12 +50,12 @@ object ToolData {
             }
 
             // mega family data - name and ancestor overrides
-            MegaFamilies.ancestorOverrides = root.getValueAndCast<YAMLMapping>("mega_families").getValueAndCast<YAMLMapping>("ancestor_overrides").resolveKeyValues().associate {
-                pair -> pair.keyText to pair.valueText
-            }
-            MegaFamilies.nameOverrides = root.getValueAndCast<YAMLMapping>("mega_families").getValueAndCast<YAMLMapping>("name_overrides").resolveKeyValues().associate { pair ->
-                pair.keyText to pair.valueText
-            }
+//            MegaFamilies.ancestorOverrides = root.getValueAndCast<YAMLMapping>("mega_families").getValueAndCast<YAMLMapping>("ancestor_overrides").resolveKeyValues().associate {
+//                pair -> pair.keyText to pair.valueText
+//            }
+//            MegaFamilies.nameOverrides = root.getValueAndCast<YAMLMapping>("mega_families").getValueAndCast<YAMLMapping>("name_overrides").resolveKeyValues().associate { pair ->
+//                pair.keyText to pair.valueText
+//            }
 
             // economic category loc, categories to include and exclude, resources to exclude
             EcoCategoryLoc.includeCategories =
@@ -86,10 +86,10 @@ object ToolData {
     }
     lateinit var listFormats: Map<String, ListFormat>
 
-    object MegaFamilies {
-        lateinit var ancestorOverrides: Map<String, String>
-        lateinit var nameOverrides: Map<String, String>
-    }
+//    object MegaFamilies {
+//        lateinit var ancestorOverrides: Map<String, String>
+//        lateinit var nameOverrides: Map<String, String>
+//    }
 
     object EcoCategoryLoc {
         lateinit var includeCategories: Set<String>

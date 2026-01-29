@@ -6,6 +6,7 @@ import com.github.ttftcuts.gigatools.main.data.Consts.Property.PREFIX
 import com.github.ttftcuts.gigatools.main.definitions.properties.ITagProperty
 import com.github.ttftcuts.gigatools.main.definitions.properties.TagProperty
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
+import com.github.ttftcuts.gigatools.main.util.PsiUtils.isVanilla
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.Project
@@ -22,6 +23,8 @@ open class Definition(override val def: ParadoxScriptDefinitionElement) : Defini
     override fun toString(): String {
         return "(${this.javaClass.simpleName}: ${def.name})"
     }
+    fun isVanilla(): Boolean { return def.isVanilla() }
+    val name get() = def.name
 
     companion object {
 

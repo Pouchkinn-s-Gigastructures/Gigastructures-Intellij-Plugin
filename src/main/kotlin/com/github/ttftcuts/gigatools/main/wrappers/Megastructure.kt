@@ -2,6 +2,8 @@ package com.github.ttftcuts.gigatools.main.wrappers
 
 import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.definitions.Definition
+import com.github.ttftcuts.gigatools.main.definitions.properties.IMegaFamilyProperty
+import com.github.ttftcuts.gigatools.main.definitions.properties.MegaFamilyProperty
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.findPropertyAndInline
 import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit
 import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit.Companion.economicCategory
@@ -9,10 +11,10 @@ import com.intellij.openapi.project.Project
 import icu.windea.pls.script.psi.ParadoxScriptBlockElement
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 
-class Megastructure(def: ParadoxScriptDefinitionElement) : Definition(def), EconomicUnit {
+class Megastructure(override val def: ParadoxScriptDefinitionElement) : Definition(def), EconomicUnit, IMegaFamilyProperty by MegaFamilyProperty(def) {
     // what mega family (build chain) does this mega belong to?
     // e.g. "is this a dyson sphere?"
-    var megaFamily: String? = null
+    //var megaFamily: String? = null
 
     val upgradeFrom : Set<Megastructure> by lazy {
         val upgradeData = def.findPropertyAndInline("upgrade_from") ?: return@lazy setOf()
@@ -37,12 +39,14 @@ class Megastructure(def: ParadoxScriptDefinitionElement) : Definition(def), Econ
         val allFamilies: MutableMap<String, MutableSet<Megastructure>> = mutableMapOf()
 
         fun familyName(mega: Megastructure): String {
+            val override = MegaFamilyProperty.getFamilyOverride(mega.def)
+            if (override != null) { return override }
             val familyNameRaw = mega.name
 
-            if (ToolData.MegaFamilies.nameOverrides.contains(familyNameRaw)) {
-                return ToolData.MegaFamilies.nameOverrides[familyNameRaw]!!
-            }
-            val regex = Regex("(\\w+?)(?:_(?:ruined|\\d)\\w*)?")
+            //if (ToolData.MegaFamilies.nameOverrides.contains(familyNameRaw)) {
+            //    return ToolData.MegaFamilies.nameOverrides[familyNameRaw]!!
+            //}
+            val regex = Regex("(\\w+?)(?:_(?:permanently_ruined|ruined|\\d)\\w*)?")
             val result = regex.matchEntire(familyNameRaw)
             //println(result?.groups)
 
@@ -83,15 +87,16 @@ class Megastructure(def: ParadoxScriptDefinitionElement) : Definition(def), Econ
             // find all first stage megas and propagate forward family membership
             val firstStages = cache.values.filterNotNull().filter { mega ->
                 mega.upgradeFrom.isEmpty() &&
-                mega.upgradeTo.isNotEmpty() &&
-                !mega.hasAnyTags("technical", "dummy_first_stage", "placeholder")
+                //mega.upgradeTo.isNotEmpty() &&
+                !mega.hasAnyTags("technical", "dummy")
             }
             for (firstStage in firstStages) {
                 firstStage.addDerivedTag(firstStageTag)
 
                 // get any ancestor override or start with this mega
-                val ancestorOverride = ToolData.MegaFamilies.ancestorOverrides[firstStage.name]
-                val ancestor = if (ancestorOverride != null) resolve(project, ancestorOverride) ?: firstStage else firstStage
+                //val ancestorOverride = ToolData.MegaFamilies.ancestorOverrides[firstStage.name]
+                //val ancestor = if (ancestorOverride != null) resolve(project, ancestorOverride) ?: firstStage else firstStage
+                val ancestor = firstStage
                 val ancestorFamilyName = familyName(ancestor)
 
                 // set up family object if it's not done already
@@ -118,7 +123,7 @@ class Megastructure(def: ParadoxScriptDefinitionElement) : Definition(def), Econ
                         println("Warning: Attempted to add mega [${mega.name}] to family [$ancestorFamilyName], but it already belongs to ${mega.megaFamily}")
                     }
 
-                    val nonTechnicalUpgradeTo = mega.upgradeTo.filter { e -> !e.hasAnyTags("technical") }
+                    val nonTechnicalUpgradeTo = mega.upgradeTo.filter { e -> !e.hasAnyTags("technical", "dummy") }
 
                     // apply last
                     if (mega.hasTags("force_final_stage") || nonTechnicalUpgradeTo.isEmpty()) {
@@ -126,7 +131,8 @@ class Megastructure(def: ParadoxScriptDefinitionElement) : Definition(def), Econ
                     }
 
                     if (!mega.hasTags("force_final_stage")) {
-                        toProcess.addAll(nonTechnicalUpgradeTo)
+                        val nonDummyUpgradeTo = mega.upgradeTo.filter { e -> !e.hasAnyTags("dummy") }
+                        toProcess.addAll(nonDummyUpgradeTo)
                     }
                 }
             }

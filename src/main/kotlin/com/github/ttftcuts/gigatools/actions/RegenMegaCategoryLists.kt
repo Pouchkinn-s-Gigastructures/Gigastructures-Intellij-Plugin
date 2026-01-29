@@ -48,11 +48,10 @@ class RegenMegaCategoryLists : DumbAwareAction() {
 //            println(nexus?.tags)
 //            println(nexus?.derivedTags)
 
-            println(Megastructure.allFamilies.keys)
-            println(Megastructure.allFamilies.map { entry -> "${entry.key}=${entry.value.map { mega -> mega.name }}" })
-            val familyMap: MutableMap<String, Megastructure> = mutableMapOf()
+            println(Megastructure.allFamilies.keys.sorted())
+            println(Megastructure.allFamilies.map { entry -> "${entry.key}=${entry.value.map { mega -> mega.name }}" }.sorted())
 
-            println(Megastructure.cache.values.filterNotNull().filter { mega -> mega.megaFamily == null && !mega.hasTags("placeholder") }.map { mega -> mega.name })
+            println(Megastructure.cache.values.filterNotNull().filter { mega -> mega.megaFamily == null && !mega.hasTags("dummy") }.map { mega -> mega.name })
 
 
 //            val trigger = TaggedDefinition.resolve(project, "scripted_trigger", "another_test_trigger")
