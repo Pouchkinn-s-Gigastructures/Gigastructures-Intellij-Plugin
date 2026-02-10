@@ -1,9 +1,6 @@
 package com.github.ttftcuts.gigatools.main.util
 
-import com.github.ttftcuts.gigatools.annotation.DefinitionPropertyAnnotator
-import com.github.ttftcuts.gigatools.main.data.Consts
 import com.github.ttftcuts.gigatools.main.definitions.Definition
-import com.github.ttftcuts.gigatools.main.definitions.properties.DefinitionTag
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiComment
@@ -12,6 +9,7 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.search.PsiSearchHelper
 import icu.windea.pls.core.collections.process
+import icu.windea.pls.core.findChild
 import icu.windea.pls.ep.resolve.ParadoxInlineSupport
 import icu.windea.pls.lang.fileInfo
 import icu.windea.pls.lang.search.ParadoxLocalisationSearch
@@ -19,6 +17,9 @@ import icu.windea.pls.lang.search.selector.*
 import icu.windea.pls.lang.util.ParadoxLocaleManager
 import icu.windea.pls.lang.util.dataFlow.*
 import icu.windea.pls.lang.util.renderers.ParadoxLocalisationTextRenderer
+import icu.windea.pls.localisation.psi.ParadoxLocalisationElementFactory
+import icu.windea.pls.localisation.psi.ParadoxLocalisationFile
+import icu.windea.pls.localisation.psi.ParadoxLocalisationPropertyList
 import icu.windea.pls.model.ParadoxRootInfo
 import icu.windea.pls.script.ParadoxScriptLanguage
 import icu.windea.pls.script.psi.*
@@ -213,5 +214,25 @@ object PsiUtils {
         if (this.fileInfo == null) { return false }
         if (this.fileInfo!!.rootInfo is ParadoxRootInfo.Game) { return true }
         return false
+    }
+
+    fun ParadoxScriptFile.replaceContents(newContents: String) {
+        val replacement = ParadoxScriptElementFactory.createDummyFile(project, newContents).findChild<ParadoxScriptRootBlock>()
+        if (replacement != null) {
+            this.deleteChildRange(this.children.first(), this.children.last())
+            this.add(replacement)
+        } else {
+            error("Script file contents replace failed")
+        }
+    }
+
+    fun ParadoxLocalisationFile.replaceContents(newContents: String) {
+        val replacement = ParadoxLocalisationElementFactory.createDummyFile(project, newContents).findChild<ParadoxLocalisationPropertyList>()
+        if (replacement != null) {
+            this.deleteChildRange(this.children.first(), this.children.last())
+            this.add(replacement)
+        } else {
+            error("Loc file contents replace failed")
+        }
     }
 }

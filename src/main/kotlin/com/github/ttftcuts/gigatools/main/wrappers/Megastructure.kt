@@ -41,18 +41,14 @@ class Megastructure(override val def: ParadoxScriptDefinitionElement) : Definiti
         fun familyName(mega: Megastructure): String {
             val override = MegaFamilyProperty.getFamilyOverride(mega.def)
             if (override != null) { return override }
-            val familyNameRaw = mega.name
 
-            //if (ToolData.MegaFamilies.nameOverrides.contains(familyNameRaw)) {
-            //    return ToolData.MegaFamilies.nameOverrides[familyNameRaw]!!
-            //}
             val regex = Regex("(\\w+?)(?:_(?:permanently_ruined|ruined|\\d)\\w*)?")
-            val result = regex.matchEntire(familyNameRaw)
+            val result = regex.matchEntire(mega.name)
             //println(result?.groups)
 
             val familyName = result?.groups[1]?.value
 
-            return familyName ?: error("Unable to generate proper family name for mega $familyNameRaw")
+            return familyName ?: error("Unable to generate proper family name for mega ${mega.name}")
         }
 
         fun deriveAllTags(project: Project) {

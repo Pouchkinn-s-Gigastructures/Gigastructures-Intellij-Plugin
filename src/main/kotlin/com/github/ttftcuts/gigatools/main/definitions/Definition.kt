@@ -25,6 +25,7 @@ open class Definition(override val def: ParadoxScriptDefinitionElement) : Defini
     }
     fun isVanilla(): Boolean { return def.isVanilla() }
     val name get() = def.name
+    val locName by lazy { PsiUtils.getElementName(def) }
 
     companion object {
 
