@@ -5,13 +5,17 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.search.PsiSearchHelper
+import icu.windea.pls.core.castOrNull
 import icu.windea.pls.core.collections.process
 import icu.windea.pls.core.findChild
+import icu.windea.pls.core.toPsiFile
 import icu.windea.pls.ep.resolve.ParadoxInlineSupport
 import icu.windea.pls.lang.fileInfo
+import icu.windea.pls.lang.search.ParadoxFilePathSearch
 import icu.windea.pls.lang.search.ParadoxLocalisationSearch
 import icu.windea.pls.lang.search.selector.*
 import icu.windea.pls.lang.util.ParadoxLocaleManager
@@ -234,5 +238,12 @@ object PsiUtils {
         } else {
             error("Loc file contents replace failed")
         }
+    }
+
+    inline fun <reified T: PsiFile>resolveFile(project: Project, path: String): T {
+        val file = ParadoxFilePathSearch.search(path, null, selector(project, project.projectFile).file()).findFirst() ?: error("PsiUtils.ResolveFile: Unable to find file: $path")
+        val psiFile = file.toPsiFile(project) ?: error("PsiUtils.ResolveFile: Unable to find PsiFile: $path")
+        val typedFile = psiFile.castOrNull<T>() ?: error("PsiUtils.ResolveFile: File $path is not a the expected type")
+        return typedFile
     }
 }

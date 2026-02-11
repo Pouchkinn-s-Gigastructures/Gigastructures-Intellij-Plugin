@@ -44,6 +44,15 @@ class TagProperty(override val def: ParadoxScriptDefinitionElement) : Definition
         derivedTags[tag.name] = tag
     }
 
+    override fun getAllTags(): Iterable<DefinitionTag> {
+        return Iterable {
+            iterator {
+                yieldAll(tags.values)
+                yieldAll(derivedTags.values)
+            }
+        }
+    }
+
     companion object: PropertyCompanion("Tags", "Tags for reference in other GigaTools functions, used to categorise where Stellaris does not.") {
 
         override fun annotate( holder: AnnotationHolder, data: PropertyData ) {
@@ -95,4 +104,5 @@ interface ITagProperty: DefinitionHolder {
     fun hasTags(vararg tagsToCheck : String, includeDerived: Boolean = true) : Boolean
     fun hasAnyTags(vararg tagsToCheck : String, includeDerived: Boolean = true) : Boolean
     fun addDerivedTag(tag: DefinitionTag)
+    fun getAllTags(): Iterable<DefinitionTag>
 }
