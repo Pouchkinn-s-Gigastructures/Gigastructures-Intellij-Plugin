@@ -79,16 +79,13 @@ class RegenMegaCategoryLists : DumbAwareAction() {
                     builder.appendLine("}")
 
                     builder.appendLine("else = {")
-                    builder.appendLine("giga_mega_is_${familyName}_list = yes")
-                    builder.appendLine("}")
-
-                    builder.appendLine("}")
-                    builder.appendLine("giga_mega_is_${familyName}_list = {")
                     builder.appendLine("or = {")
                     for (mega in family) {
                         builder.appendLine("is_megastructure_type = ${mega.name} # ${mega.locName}")
                     }
                     builder.appendLine("}")
+                    builder.appendLine("}")
+
                     builder.appendLine("}")
                     builder.appendLine()
                 }

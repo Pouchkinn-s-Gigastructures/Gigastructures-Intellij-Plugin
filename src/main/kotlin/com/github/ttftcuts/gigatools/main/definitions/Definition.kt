@@ -52,10 +52,12 @@ open class Definition(override val def: ParadoxScriptDefinitionElement) : Defini
             if (!text.startsWith(PREFIX)) { return null }
 
             // only if there are script definitions in the file
-            if (element.parent.children.isEmpty() || element.parent.children.first() !is ParadoxScriptDefinitionElement) { return null }
+            if (element.parent.children.isEmpty()) { return null }
+            val scriptElements = element.parent.children.filter { e-> e is ParadoxScriptDefinitionElement }
+            if (scriptElements.isEmpty()) { return null }
 
             // use the first child to determine what kind of definitions this file "should" have
-            val fileDefType = getDefinitionType(element.parent.children.first() as ParadoxScriptDefinitionElement)
+            val fileDefType = getDefinitionType(scriptElements.first() as ParadoxScriptDefinitionElement)
 
             // snip down the text range
             var textOffset = PREFIX.length
