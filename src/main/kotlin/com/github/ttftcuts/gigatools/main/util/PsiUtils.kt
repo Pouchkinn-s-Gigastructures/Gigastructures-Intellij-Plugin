@@ -124,13 +124,16 @@ object PsiUtils {
 
     //val parameterSupport by lazy { ParadoxDefinitionParameterSupport() }
 
+    val DEFAULT_RESOLVER = { e: String -> e }
+    class ResolvedElement(val element: ParadoxScriptProperty, val resolver: ((String) -> String))
+
     fun PsiElement.findPropertyAndInline(
         propertyName: String? = null,
         ignoreCase: Boolean = true,
         conditional: Boolean = false,
-    ): Pair<ParadoxScriptProperty?,((String) ->String)?>? {
+    ): ResolvedElement? {
         if (language != ParadoxScriptLanguage) return null
-        if (propertyName != null && propertyName.isEmpty()) return this as? ParadoxScriptProperty to null
+        if (propertyName != null && propertyName.isEmpty()) return ResolvedElement(this as ParadoxScriptProperty, DEFAULT_RESOLVER)
         val block = when {
             this is ParadoxScriptDefinitionElement -> this.block
             this is ParadoxScriptBlock -> this
@@ -210,8 +213,9 @@ object PsiUtils {
                 true
             }
         }
-        if (parameterStack.isEmpty()) { return result to null }
-        return result to doReplacement
+        if (result == null) { return null }
+        if (parameterStack.isEmpty()) { return ResolvedElement(result, DEFAULT_RESOLVER) }
+        return ResolvedElement(result, doReplacement)
     }
 
     fun PsiElement.isVanilla(): Boolean {

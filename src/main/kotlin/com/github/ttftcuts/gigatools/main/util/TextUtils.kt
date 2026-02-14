@@ -16,4 +16,12 @@ object TextUtils {
     fun StringBuilder.appendEOFComment() {
         appendLine("# EOF")
     }
+
+    fun StringBuilder.appendSectionBreak() {
+        appendLine()
+        appendLine("#".repeat(120))
+        appendLine("#".repeat(120))
+        appendLine("#".repeat(120))
+        appendLine()
+    }
 }

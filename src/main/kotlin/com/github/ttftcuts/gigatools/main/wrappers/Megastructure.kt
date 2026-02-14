@@ -4,12 +4,14 @@ import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.github.ttftcuts.gigatools.main.definitions.properties.IMegaFamilyProperty
 import com.github.ttftcuts.gigatools.main.definitions.properties.MegaFamilyProperty
+import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.findPropertyAndInline
 import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit
 import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit.Companion.economicCategory
 import com.intellij.openapi.project.Project
 import icu.windea.pls.script.psi.ParadoxScriptBlockElement
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
+import icu.windea.pls.script.psi.valueList
 
 class Megastructure(override val def: ParadoxScriptDefinitionElement) : Definition(def), EconomicUnit, IMegaFamilyProperty by MegaFamilyProperty(def) {
     // what mega family (build chain) does this mega belong to?
@@ -18,15 +20,13 @@ class Megastructure(override val def: ParadoxScriptDefinitionElement) : Definiti
 
     val upgradeFrom : Set<Megastructure> by lazy {
         val upgradeData = def.findPropertyAndInline("upgrade_from") ?: return@lazy setOf()
-        val resolver = upgradeData.second ?: { e: String -> e }
-        val upgradeElement = upgradeData.first ?: return@lazy setOf()
-        val upgradeBlock = upgradeElement.propertyValue
+        val upgradeBlock = upgradeData.element.propertyValue
         if (upgradeBlock !is ParadoxScriptBlockElement) { return@lazy setOf() }
 
         upgradeBlock.valueList.mapNotNull {
             v ->
             //println("in ${def.name}: $v, ${v.javaClass}");
-            resolve(def.project, resolver(v.value))
+            resolve(def.project, upgradeData.resolver(v.value))
         }.toSet()
     }
 
@@ -55,6 +55,7 @@ class Megastructure(override val def: ParadoxScriptDefinitionElement) : Definiti
             val allMegaTags = ToolData.getTagsForType("megastructure")
             val firstStageTag = allMegaTags["first_stage"] ?: error("first_stage megastructure tag missing!")
             val finalStageTag = allMegaTags["final_stage"] ?: error("final_stage megastructure tag missing!")
+            val buildableTag = allMegaTags["buildable"] ?: error("buildable megastructure tag missing!")
 
             // get every mega
             resolveAll(project)
@@ -131,6 +132,34 @@ class Megastructure(override val def: ParadoxScriptDefinitionElement) : Definiti
                         toProcess.addAll(nonDummyUpgradeTo)
                     }
                 }
+            }
+
+            // determine buildability, all first stages which don't have always = no as a potential
+            fun tagBuildable(mega: Megastructure) {
+                mega.addDerivedTag(buildableTag)
+            }
+            for (firstStage in firstStages) {
+                val potential = firstStage.def.findPropertyAndInline("potential")
+                // if no potential block, buildable
+                if (potential == null) { tagBuildable(firstStage); continue }
+
+                // if potential but it's busted, not buildable
+                val block = potential.element.propertyValue as? ParadoxScriptBlockElement ?: continue
+
+                // if the potential is empty, buildable
+                if (block.propertyList.isEmpty()) {
+                    tagBuildable(firstStage); continue
+                }
+                // if the potential is always = no, not buildable
+                else if (block.propertyList.count() == 1) {
+                    val first = block.propertyList.first()
+                    if (first.name.lowercase() == "always" && first.value?.lowercase() == "no") {
+                        continue
+                    }
+                }
+
+                // if we got this far, buildable
+                tagBuildable(firstStage)
             }
         }
 

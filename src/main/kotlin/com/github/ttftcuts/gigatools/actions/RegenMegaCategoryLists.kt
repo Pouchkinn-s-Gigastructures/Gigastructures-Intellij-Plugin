@@ -1,17 +1,20 @@
 package com.github.ttftcuts.gigatools.actions
 
 import com.github.ttftcuts.gigatools.main.data.ToolData
+import com.github.ttftcuts.gigatools.main.definitions.properties.DefinitionTag
 import com.github.ttftcuts.gigatools.main.util.EditorUtils.showMessage
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.replaceContents
 import com.github.ttftcuts.gigatools.main.util.TextUtils.appendEOFComment
 import com.github.ttftcuts.gigatools.main.util.TextUtils.appendGeneratedFileWarning
+import com.github.ttftcuts.gigatools.main.util.TextUtils.appendSectionBreak
 import com.github.ttftcuts.gigatools.main.wrappers.EconomicCategory
 import com.github.ttftcuts.gigatools.main.wrappers.Megastructure
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.DumbAwareAction
+import com.s.T.w.T
 import icu.windea.pls.script.psi.ParadoxScriptFile
 
 class RegenMegaCategoryLists : DumbAwareAction() {
@@ -75,7 +78,7 @@ class RegenMegaCategoryLists : DumbAwareAction() {
                     builder.appendLine("limit = {")
                     builder.appendLine("has_megastructure_flag = @giga_mega_classified")
                     builder.appendLine("}")
-                    builder.appendLine("has_megastructure_flag = giga_mega_family_$familyName")
+                    builder.appendLine("has_megastructure_flag = $FAMILY_PREFIX$familyName")
                     builder.appendLine("}")
 
                     builder.appendLine("else = {")
@@ -97,11 +100,14 @@ class RegenMegaCategoryLists : DumbAwareAction() {
             run {
                 val file = PsiUtils.resolveFile<ParadoxScriptFile>(project, CLASSIFIER_FILE_PATH)
                 val vanillaDefs = mutableListOf<Megastructure>()
+                val classifierFlags = mutableSetOf<String>()
+                val constructionFlags = mutableSetOf<String>()
 
                 val builder = StringBuilder()
                 builder.appendGeneratedFileWarning()
 
-                builder.appendLine("giga_classify_mega = {")
+                // megas
+                builder.appendLine("giga_classify_mega_switch = {")
                 builder.appendLine("switch = {")
                 builder.appendLine("trigger = is_megastructure_type")
 
@@ -113,11 +119,13 @@ class RegenMegaCategoryLists : DumbAwareAction() {
                     builder.appendLine("${mega.name} = {")
 
                     if (mega.megaFamily != null) {
-                        builder.appendLine("set_megastructure_flag = giga_mega_family_${mega.megaFamily}")
+                        builder.appendLine("set_megastructure_flag = ${familyString(mega)}")
+                        classifierFlags.add(familyString(mega))
                     }
 
                     for (tag in tags) {
-                        builder.appendLine("set_megastructure_flag = ${tag.name}")
+                        builder.appendLine("set_megastructure_flag = ${tagString(tag)}")
+                        classifierFlags.add(tagString(tag))
                     }
 
                     builder.appendLine("}")
@@ -129,6 +137,58 @@ class RegenMegaCategoryLists : DumbAwareAction() {
                 builder.appendLine("}")
                 builder.appendLine("}")
 
+                // clear tags
+                builder.appendLine()
+                builder.appendLine("giga_classify_mega_clear = {")
+                for (flag in classifierFlags) {
+                    builder.appendLine("remove_megastructure_flag = $flag")
+                }
+                builder.appendLine("}")
+
+                // spacer
+                builder.appendSectionBreak()
+
+                // construction
+                builder.appendLine("giga_classify_mega_construction_switch = {")
+                builder.appendLine("switch = {")
+                builder.appendLine("trigger = is_constructing")
+
+                for (mega in Megastructure.cache.values.filterNotNull()) {
+                    val tags = mega.getAllTags().filter { tag -> tag.classify }
+                    if (mega.megaFamily == null && tags.isEmpty()) { continue }
+
+                    // first stages which are buildable only
+                    if (!(mega.hasTags("buildable", includeDerived = true))) { continue }
+
+                    builder.appendLine("# ${mega.locName}")
+                    builder.appendLine("${mega.name} = {")
+
+                    if (mega.megaFamily != null) {
+                        builder.appendLine("set_fleet_flag = ${familyString(mega)}")
+                        constructionFlags.add(familyString(mega))
+                    }
+
+                    for (tag in tags) {
+                        builder.appendLine("set_fleet_flag = ${tagString(tag)}")
+                        constructionFlags.add(tagString(tag))
+                    }
+
+                    builder.appendLine("}")
+                }
+
+                builder.appendLine("default = { }")
+                builder.appendLine("}")
+                builder.appendLine("}")
+
+                // clear tags
+                builder.appendLine()
+                builder.appendLine("giga_classify_mega_construction_clear = {")
+                for (flag in constructionFlags) {
+                    builder.appendLine("remove_fleet_flag = $flag")
+                }
+                builder.appendLine("}")
+
+                // vanilla defs readout
                 if (vanillaDefs.isNotEmpty()) {
                     builder.appendLine()
                     builder.appendLine("# Vanilla megas not redefined by gigas")
@@ -138,10 +198,13 @@ class RegenMegaCategoryLists : DumbAwareAction() {
                     }
                 }
 
+                // eof
                 builder.appendLine()
                 builder.appendEOFComment()
                 file.replaceContents(builder.toString())
             }
+
+
 
 //            val trigger = TaggedDefinition.resolve(project, "scripted_trigger", "another_test_trigger")
 //
@@ -203,8 +266,17 @@ class RegenMegaCategoryLists : DumbAwareAction() {
         showMessage("Trigger Rebuild Complete")
     }
 
+    fun familyString(mega: Megastructure): String {
+        return "$FAMILY_PREFIX${mega.megaFamily}"
+    }
+
+    fun tagString(tag: DefinitionTag): String {
+        return "$TAG_PREFIX${tag.name}"
+    }
+
     companion object {
-        const val PREFIX = "## Auto List"
+        const val FAMILY_PREFIX = "giga_family_"
+        const val TAG_PREFIX = "giga_tag_"
 
         const val FAMILY_FILE_PATH = "common/scripted_triggers/giga_mega_families_auto.txt"
         const val CLASSIFIER_FILE_PATH = "common/scripted_effects/giga_mega_classifier_auto.txt"

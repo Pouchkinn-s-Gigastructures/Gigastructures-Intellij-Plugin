@@ -9,9 +9,8 @@ import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 class EconomicCategory(def: ParadoxScriptDefinitionElement) : Definition(def) {
     val parent: EconomicCategory? by lazy {
         var parentData = def.findPropertyAndInline("parent") ?: return@lazy null
-        val resolver = parentData.second ?: { e: String -> e }
-        if (parentData.first?.value == null) return@lazy null
-        return@lazy resolve(def.project, resolver(parentData.first!!.value!!))
+        if (parentData.element.value == null) return@lazy null
+        return@lazy resolve(def.project, parentData.resolver(parentData.element.value!!))
     }
 
     val children: Set<EconomicCategory> by lazy {
@@ -46,7 +45,7 @@ class EconomicCategory(def: ParadoxScriptDefinitionElement) : Definition(def) {
         // find the modifier block
         val property = def.findPropertyAndInline("generate_${type.name}_modifiers") ?: return false
         // if it's null somehow, false
-        val block = property.first?.block ?: return false
+        val block = property.element.block ?: return false
         // find the modifier type inside it, if missing false
         block.findPropertyAndInline(domain.name) ?: return false
         // if we got this far it means we found it
