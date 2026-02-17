@@ -14,7 +14,6 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.DumbAwareAction
-import com.s.T.w.T
 import icu.windea.pls.script.psi.ParadoxScriptFile
 
 class RegenMegaCategoryLists : DumbAwareAction() {
@@ -133,7 +132,9 @@ class RegenMegaCategoryLists : DumbAwareAction() {
                     if (mega.isVanilla()) { vanillaDefs.add(mega) }
                 }
 
-                builder.appendLine("default = { }")
+                builder.appendLine("default = {")
+                builder.appendLine("giga_classify_mega_switch_default = yes")
+                builder.appendLine("}")
                 builder.appendLine("}")
                 builder.appendLine("}")
 
@@ -176,11 +177,13 @@ class RegenMegaCategoryLists : DumbAwareAction() {
                     builder.appendLine("}")
                 }
 
-                builder.appendLine("default = { }")
+                builder.appendLine("default = {")
+                builder.appendLine("giga_classify_mega_construction_switch_default = yes")
+                builder.appendLine("}")
                 builder.appendLine("}")
                 builder.appendLine("}")
 
-                // clear tags
+                // clear construction tags
                 builder.appendLine()
                 builder.appendLine("giga_classify_mega_construction_clear = {")
                 for (flag in constructionFlags) {
