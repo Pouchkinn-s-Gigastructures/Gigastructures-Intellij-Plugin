@@ -55,14 +55,14 @@ class RegenJobEcoLoc : DumbAwareAction() {
 
             // all categories which are descendants of planet_jobs, plus inclusions from data, minus exclusions from data
             // also exclude any categories which don't generate modifiers
-            val categories = EconomicCategory.cache.values.filterNotNull().filter { cat ->
+            val categories = EconomicCategory.cache.values.filter { cat ->
                 !ToolData.EcoCategoryLoc.excludeCategories.contains(cat.name)
                 && (cat == planetJobs || cat.isDescendantOf(planetJobs) || ToolData.EcoCategoryLoc.includeCategories.contains(cat.name))
                 && cat.generatesAnyModifiers
             }.toSet()
 
             // all resources, minus exclusions from data
-            val resources = StrategicResource.cache.values.filterNotNull()
+            val resources = StrategicResource.cache.values
                 .filter { res -> !ToolData.EcoCategoryLoc.excludeResources.contains(res.name) }.toSet()
 
             // get locale, standardised for gigas

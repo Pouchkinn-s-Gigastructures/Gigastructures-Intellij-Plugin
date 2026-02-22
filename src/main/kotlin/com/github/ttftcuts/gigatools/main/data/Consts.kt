@@ -1,8 +1,11 @@
 package com.github.ttftcuts.gigatools.main.data
 
+import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.github.ttftcuts.gigatools.main.definitions.PropertyCompanion
 import com.github.ttftcuts.gigatools.main.definitions.properties.MegaFamilyProperty
 import com.github.ttftcuts.gigatools.main.definitions.properties.TagProperty
+import com.github.ttftcuts.gigatools.main.definitions.properties.TaggedListGeneratorProperty
+import com.github.ttftcuts.gigatools.main.wrappers.WrapperCompanion
 
 enum class EcoModifierType(name: String) {
     ADD("add"),
@@ -19,6 +22,7 @@ object Consts {
     val DefinitionPropertyTypes: Set<PropertyCompanion> = setOf(
         TagProperty,
         MegaFamilyProperty,
+        TaggedListGeneratorProperty,
     )
 
     object Property {

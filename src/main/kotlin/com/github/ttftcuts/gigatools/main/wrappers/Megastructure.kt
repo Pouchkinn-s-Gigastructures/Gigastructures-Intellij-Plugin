@@ -32,7 +32,7 @@ class Megastructure(override val def: ParadoxScriptDefinitionElement) : Definiti
 
     val upgradeTo : Set<Megastructure> by lazy {
         resolveAll(def.project)
-        cache.values.filterNotNull().filter { e -> (e != this) && e.upgradeFrom.contains(this) }.toSet()
+        cache.values.filter { e -> (e != this) && e.upgradeFrom.contains(this) }.toSet()
     }
 
     companion object: WrapperCompanion<Megastructure>("megastructure", ::Megastructure) {
@@ -61,7 +61,7 @@ class Megastructure(override val def: ParadoxScriptDefinitionElement) : Definiti
             resolveAll(project)
 
             // base sweep, for stuff all megas should check
-            for(mega in cache.values.filterNotNull()) {
+            for(mega in cache.values) {
 
                 // inherit tags from economic category
                 if (mega.economicCategory != null) {
@@ -82,7 +82,7 @@ class Megastructure(override val def: ParadoxScriptDefinitionElement) : Definiti
             }
 
             // find all first stage megas and propagate forward family membership
-            val firstStages = cache.values.filterNotNull().filter { mega ->
+            val firstStages = cache.values.filter { mega ->
                 mega.upgradeFrom.isEmpty() &&
                 //mega.upgradeTo.isNotEmpty() &&
                 !mega.hasAnyTags("technical", "dummy")

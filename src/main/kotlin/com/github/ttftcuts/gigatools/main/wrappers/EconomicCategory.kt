@@ -15,7 +15,7 @@ class EconomicCategory(def: ParadoxScriptDefinitionElement) : Definition(def) {
 
     val children: Set<EconomicCategory> by lazy {
         resolveAll(def.project)
-        cache.values.filterNotNull().filter { e -> (e != this) && e.parent == this }.toSet()
+        cache.values.filter { e -> (e != this) && e.parent == this }.toSet()
     }
 
     val generatesAnyModifiers: Boolean by lazy {

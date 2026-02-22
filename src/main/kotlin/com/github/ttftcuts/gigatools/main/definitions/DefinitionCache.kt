@@ -11,7 +11,7 @@ class DefinitionCache<T : Definition>(val typeExpression: String, val factory: (
     private var resolvedAll = false
     val cache : MutableMap<String, T?> = mutableMapOf()
 
-    val values get() = cache.values
+    val values get() = cache.values.filterNotNull()
 
     fun clear() {
         cache.clear()

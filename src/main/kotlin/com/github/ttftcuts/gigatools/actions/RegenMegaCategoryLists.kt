@@ -1,5 +1,6 @@
 package com.github.ttftcuts.gigatools.actions
 
+import com.github.ttftcuts.gigatools.main.data.Consts
 import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.definitions.properties.DefinitionTag
 import com.github.ttftcuts.gigatools.main.util.EditorUtils.showMessage
@@ -10,6 +11,8 @@ import com.github.ttftcuts.gigatools.main.util.TextUtils.appendGeneratedFileWarn
 import com.github.ttftcuts.gigatools.main.util.TextUtils.appendSectionBreak
 import com.github.ttftcuts.gigatools.main.wrappers.EconomicCategory
 import com.github.ttftcuts.gigatools.main.wrappers.Megastructure
+import com.github.ttftcuts.gigatools.main.wrappers.ScriptedEffect
+import com.github.ttftcuts.gigatools.main.wrappers.ScriptedTrigger
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.WriteCommandAction
@@ -49,163 +52,158 @@ class RegenMegaCategoryLists : DumbAwareAction() {
             Megastructure.regenerateCache(project)
             Megastructure.deriveAllTags(project)
 
-//            val nexus = Megastructure.resolve(project, "think_tank_0")
-//            println(nexus?.name)
-//            println(nexus?.economicCategory)
-//            println(nexus?.tags)
-//            println(nexus?.derivedTags)
+            ScriptedTrigger.regenerateCache(project)
+            ScriptedEffect.regenerateCache(project)
 
-            //println(Megastructure.allFamilies.keys.sorted())
-            //println(Megastructure.allFamilies.map { entry -> "${entry.key}=${entry.value.map { mega -> mega.name }}" }.sorted())
+            println("Scripted triggers with tagged list data")
+            println(ScriptedTrigger.cache.values.filter { t -> t.taggedListInfo != null })
 
-            //println(Megastructure.cache.values.filterNotNull().filter { mega -> mega.megaFamily == null && !mega.hasTags("dummy") }.map { mega -> mega.name })
-
-            // families
-            run {
-                val file = PsiUtils.resolveFile<ParadoxScriptFile>(project, FAMILY_FILE_PATH)
-
-                val builder = StringBuilder()
-                builder.appendGeneratedFileWarning()
-
-                for (keyVal in Megastructure.allFamilies) {
-                    val familyName = keyVal.key
-                    val family = keyVal.value
-                    builder.appendLine("# $familyName")
-                    builder.appendLine("giga_mega_is_$familyName = {")
-
-                    builder.appendLine("if = {")
-                    builder.appendLine("limit = {")
-                    builder.appendLine("has_megastructure_flag = @giga_mega_classified")
-                    builder.appendLine("}")
-                    builder.appendLine("has_megastructure_flag = $FAMILY_PREFIX$familyName")
-                    builder.appendLine("}")
-
-                    builder.appendLine("else = {")
-                    builder.appendLine("or = {")
-                    for (mega in family) {
-                        builder.appendLine("is_megastructure_type = ${mega.name} # ${mega.locName}")
-                    }
-                    builder.appendLine("}")
-                    builder.appendLine("}")
-
-                    builder.appendLine("}")
-                    builder.appendLine()
-                }
-                builder.appendEOFComment()
-                file.replaceContents(builder.toString())
-            }
-
-            // categorisation
-            run {
-                val file = PsiUtils.resolveFile<ParadoxScriptFile>(project, CLASSIFIER_FILE_PATH)
-                val vanillaDefs = mutableListOf<Megastructure>()
-                val classifierFlags = mutableSetOf<String>()
-                val constructionFlags = mutableSetOf<String>()
-
-                val builder = StringBuilder()
-                builder.appendGeneratedFileWarning()
-
-                // megas
-                builder.appendLine("giga_classify_mega_switch = {")
-                builder.appendLine("switch = {")
-                builder.appendLine("trigger = is_megastructure_type")
-
-                for (mega in Megastructure.cache.values.filterNotNull()) {
-                    val tags = mega.getAllTags().filter { tag -> tag.classify }
-                    if (mega.megaFamily == null && tags.isEmpty()) { continue }
-
-                    builder.appendLine("# ${mega.locName}")
-                    builder.appendLine("${mega.name} = {")
-
-                    if (mega.megaFamily != null) {
-                        builder.appendLine("set_megastructure_flag = ${familyString(mega)}")
-                        classifierFlags.add(familyString(mega))
-                    }
-
-                    for (tag in tags) {
-                        builder.appendLine("set_megastructure_flag = ${tagString(tag)}")
-                        classifierFlags.add(tagString(tag))
-                    }
-
-                    builder.appendLine("}")
-
-                    if (mega.isVanilla()) { vanillaDefs.add(mega) }
-                }
-
-                builder.appendLine("default = {")
-                builder.appendLine("giga_classify_mega_switch_default = yes")
-                builder.appendLine("}")
-                builder.appendLine("}")
-                builder.appendLine("}")
-
-                // clear tags
-                builder.appendLine()
-                builder.appendLine("giga_classify_mega_clear = {")
-                for (flag in classifierFlags) {
-                    builder.appendLine("remove_megastructure_flag = $flag")
-                }
-                builder.appendLine("}")
-
-                // spacer
-                builder.appendSectionBreak()
-
-                // construction
-                builder.appendLine("giga_classify_mega_construction_switch = {")
-                builder.appendLine("switch = {")
-                builder.appendLine("trigger = is_constructing")
-
-                for (mega in Megastructure.cache.values.filterNotNull()) {
-                    val tags = mega.getAllTags().filter { tag -> tag.classify }
-                    if (mega.megaFamily == null && tags.isEmpty()) { continue }
-
-                    // first stages which are buildable only
-                    if (!(mega.hasTags("buildable", includeDerived = true))) { continue }
-
-                    builder.appendLine("# ${mega.locName}")
-                    builder.appendLine("${mega.name} = {")
-
-                    if (mega.megaFamily != null) {
-                        builder.appendLine("set_fleet_flag = ${familyString(mega)}")
-                        constructionFlags.add(familyString(mega))
-                    }
-
-                    for (tag in tags) {
-                        builder.appendLine("set_fleet_flag = ${tagString(tag)}")
-                        constructionFlags.add(tagString(tag))
-                    }
-
-                    builder.appendLine("}")
-                }
-
-                builder.appendLine("default = {")
-                builder.appendLine("giga_classify_mega_construction_switch_default = yes")
-                builder.appendLine("}")
-                builder.appendLine("}")
-                builder.appendLine("}")
-
-                // clear construction tags
-                builder.appendLine()
-                builder.appendLine("giga_classify_mega_construction_clear = {")
-                for (flag in constructionFlags) {
-                    builder.appendLine("remove_fleet_flag = $flag")
-                }
-                builder.appendLine("}")
-
-                // vanilla defs readout
-                if (vanillaDefs.isNotEmpty()) {
-                    builder.appendLine()
-                    builder.appendLine("# Vanilla megas not redefined by gigas")
-                    builder.appendLine()
-                    for (mega in vanillaDefs) {
-                        builder.appendLine("# ${mega.name} - ${mega.locName}")
-                    }
-                }
-
-                // eof
-                builder.appendLine()
-                builder.appendEOFComment()
-                file.replaceContents(builder.toString())
-            }
+//            // families
+//            run {
+//                val file = PsiUtils.resolveFile<ParadoxScriptFile>(project, FAMILY_FILE_PATH)
+//
+//                val builder = StringBuilder()
+//                builder.appendGeneratedFileWarning()
+//
+//                for (keyVal in Megastructure.allFamilies) {
+//                    val familyName = keyVal.key
+//                    val family = keyVal.value
+//                    builder.appendLine("# $familyName")
+//                    builder.appendLine("giga_mega_is_$familyName = {")
+//
+//                    builder.appendLine("if = {")
+//                    builder.appendLine("limit = {")
+//                    builder.appendLine("has_megastructure_flag = @giga_mega_classified")
+//                    builder.appendLine("}")
+//                    builder.appendLine("has_megastructure_flag = $FAMILY_PREFIX$familyName")
+//                    builder.appendLine("}")
+//
+//                    builder.appendLine("else = {")
+//                    builder.appendLine("or = {")
+//                    for (mega in family) {
+//                        builder.appendLine("is_megastructure_type = ${mega.name} # ${mega.locName}")
+//                    }
+//                    builder.appendLine("}")
+//                    builder.appendLine("}")
+//
+//                    builder.appendLine("}")
+//                    builder.appendLine()
+//                }
+//                builder.appendEOFComment()
+//                file.replaceContents(builder.toString())
+//            }
+//
+//            // categorisation
+//            run {
+//                val file = PsiUtils.resolveFile<ParadoxScriptFile>(project, CLASSIFIER_FILE_PATH)
+//                val vanillaDefs = mutableListOf<Megastructure>()
+//                val classifierFlags = mutableSetOf<String>()
+//                val constructionFlags = mutableSetOf<String>()
+//
+//                val builder = StringBuilder()
+//                builder.appendGeneratedFileWarning()
+//
+//                // megas
+//                builder.appendLine("giga_classify_mega_switch = {")
+//                builder.appendLine("switch = {")
+//                builder.appendLine("trigger = is_megastructure_type")
+//
+//                for (mega in Megastructure.cache.values.filterNotNull()) {
+//                    val tags = mega.getAllTags().filter { tag -> tag.classify }
+//                    if (mega.megaFamily == null && tags.isEmpty()) { continue }
+//
+//                    builder.appendLine("# ${mega.locName}")
+//                    builder.appendLine("${mega.name} = {")
+//
+//                    if (mega.megaFamily != null) {
+//                        builder.appendLine("set_megastructure_flag = ${familyString(mega)}")
+//                        classifierFlags.add(familyString(mega))
+//                    }
+//
+//                    for (tag in tags) {
+//                        builder.appendLine("set_megastructure_flag = ${tagString(tag)}")
+//                        classifierFlags.add(tagString(tag))
+//                    }
+//
+//                    builder.appendLine("}")
+//
+//                    if (mega.isVanilla()) { vanillaDefs.add(mega) }
+//                }
+//
+//                builder.appendLine("default = {")
+//                builder.appendLine("giga_classify_mega_switch_default = yes")
+//                builder.appendLine("}")
+//                builder.appendLine("}")
+//                builder.appendLine("}")
+//
+//                // clear tags
+//                builder.appendLine()
+//                builder.appendLine("giga_classify_mega_clear = {")
+//                for (flag in classifierFlags) {
+//                    builder.appendLine("remove_megastructure_flag = $flag")
+//                }
+//                builder.appendLine("}")
+//
+//                // spacer
+//                builder.appendSectionBreak()
+//
+//                // construction
+//                builder.appendLine("giga_classify_mega_construction_switch = {")
+//                builder.appendLine("switch = {")
+//                builder.appendLine("trigger = is_constructing")
+//
+//                for (mega in Megastructure.cache.values.filterNotNull()) {
+//                    val tags = mega.getAllTags().filter { tag -> tag.classify }
+//                    if (mega.megaFamily == null && tags.isEmpty()) { continue }
+//
+//                    // first stages which are buildable only
+//                    if (!(mega.hasTags("buildable", includeDerived = true))) { continue }
+//
+//                    builder.appendLine("# ${mega.locName}")
+//                    builder.appendLine("${mega.name} = {")
+//
+//                    if (mega.megaFamily != null) {
+//                        builder.appendLine("set_fleet_flag = ${familyString(mega)}")
+//                        constructionFlags.add(familyString(mega))
+//                    }
+//
+//                    for (tag in tags) {
+//                        builder.appendLine("set_fleet_flag = ${tagString(tag)}")
+//                        constructionFlags.add(tagString(tag))
+//                    }
+//
+//                    builder.appendLine("}")
+//                }
+//
+//                builder.appendLine("default = {")
+//                builder.appendLine("giga_classify_mega_construction_switch_default = yes")
+//                builder.appendLine("}")
+//                builder.appendLine("}")
+//                builder.appendLine("}")
+//
+//                // clear construction tags
+//                builder.appendLine()
+//                builder.appendLine("giga_classify_mega_construction_clear = {")
+//                for (flag in constructionFlags) {
+//                    builder.appendLine("remove_fleet_flag = $flag")
+//                }
+//                builder.appendLine("}")
+//
+//                // vanilla defs readout
+//                if (vanillaDefs.isNotEmpty()) {
+//                    builder.appendLine()
+//                    builder.appendLine("# Vanilla megas not redefined by gigas")
+//                    builder.appendLine()
+//                    for (mega in vanillaDefs) {
+//                        builder.appendLine("# ${mega.name} - ${mega.locName}")
+//                    }
+//                }
+//
+//                // eof
+//                builder.appendLine()
+//                builder.appendEOFComment()
+//                file.replaceContents(builder.toString())
+//            }
 
 
 

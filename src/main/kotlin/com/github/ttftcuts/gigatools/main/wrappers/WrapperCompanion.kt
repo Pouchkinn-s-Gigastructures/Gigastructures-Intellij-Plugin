@@ -1,5 +1,6 @@
 package com.github.ttftcuts.gigatools.main.wrappers
 
+import com.github.ttftcuts.gigatools.main.data.Consts
 import com.github.ttftcuts.gigatools.main.definitions.DefinitionCache
 import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.intellij.openapi.project.Project
