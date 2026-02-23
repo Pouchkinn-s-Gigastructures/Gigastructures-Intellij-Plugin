@@ -5,7 +5,7 @@ import com.github.ttftcuts.gigatools.main.definitions.properties.ITaggedListGene
 import com.github.ttftcuts.gigatools.main.definitions.properties.TaggedListGeneratorProperty
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 
-class ScriptedTrigger(override val def: ParadoxScriptDefinitionElement): Definition(def), ITaggedListGeneratorProperty<ScriptedTrigger> by TaggedListGeneratorProperty(def, Companion) {
+class ScriptedTrigger(override val def: ParadoxScriptDefinitionElement): Definition(def), ITaggedListGeneratorProperty by TaggedListGeneratorProperty(def) {
 
     companion object: WrapperCompanion<ScriptedTrigger>("scripted_trigger", ::ScriptedTrigger)
 }

@@ -19,6 +19,15 @@ kotlin {
     jvmToolchain(21)
 }
 
+// Include the generated files in the source set
+sourceSets {
+    main {
+        java {
+            srcDirs("src/main/gen")
+        }
+    }
+}
+
 // Configure project's dependencies
 repositories {
     mavenCentral()

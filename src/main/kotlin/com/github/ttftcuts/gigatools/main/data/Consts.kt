@@ -5,6 +5,11 @@ import com.github.ttftcuts.gigatools.main.definitions.PropertyCompanion
 import com.github.ttftcuts.gigatools.main.definitions.properties.MegaFamilyProperty
 import com.github.ttftcuts.gigatools.main.definitions.properties.TagProperty
 import com.github.ttftcuts.gigatools.main.definitions.properties.TaggedListGeneratorProperty
+import com.github.ttftcuts.gigatools.main.wrappers.EconomicCategory
+import com.github.ttftcuts.gigatools.main.wrappers.Megastructure
+import com.github.ttftcuts.gigatools.main.wrappers.ScriptedEffect
+import com.github.ttftcuts.gigatools.main.wrappers.ScriptedTrigger
+import com.github.ttftcuts.gigatools.main.wrappers.StrategicResource
 import com.github.ttftcuts.gigatools.main.wrappers.WrapperCompanion
 
 enum class EcoModifierType(name: String) {
@@ -19,6 +24,14 @@ enum class EcoModifierDomain(name: String) {
 }
 
 object Consts {
+    val DefinitionTypes: Set<WrapperCompanion<*>> = setOf(
+        EconomicCategory,
+        Megastructure,
+        ScriptedEffect,
+        ScriptedTrigger,
+        StrategicResource,
+    )
+
     val DefinitionPropertyTypes: Set<PropertyCompanion> = setOf(
         TagProperty,
         MegaFamilyProperty,

@@ -1,0 +1,19 @@
+{
+    parserClass = "com.github.ttftcuts.gigatools.language.TagLangParser"
+    extends = "com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+    psiClassPrefix = "TagLang"
+    psiImplClassSuffix = "Impl"
+    psiPackage = "com.github.ttftcuts.gigatools.language.psi"
+    psiImplPackage = "com.github.ttftcuts.gigatools.language.psi.impl"
+
+    elementTypeHolderClass = "com.github.ttftcuts.gigatools.language.psi.TagLangTypes"
+    elementTypeClass = "com.github.ttftcuts.gigatools.language.psi.TagElementType"
+    tokenTypeClass = "com.github.ttftcuts.gigatools.language.psi.TagTokenType"
+}
+
+tagFile ::= item_*
+
+private item_ ::= (property|COMMENT|CRLF)
+
+property ::= (KEY? SEPARATOR VALUE?) | KEY
