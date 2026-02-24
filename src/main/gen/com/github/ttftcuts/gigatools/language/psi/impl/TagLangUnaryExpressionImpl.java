@@ -11,20 +11,32 @@ import static com.github.ttftcuts.gigatools.language.psi.TagLangTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.ttftcuts.gigatools.language.psi.*;
 
-public class TagLangPropertyImpl extends ASTWrapperPsiElement implements TagLangProperty {
+public class TagLangUnaryExpressionImpl extends ASTWrapperPsiElement implements TagLangUnaryExpression {
 
-  public TagLangPropertyImpl(@NotNull ASTNode node) {
+  public TagLangUnaryExpressionImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull TagLangVisitor visitor) {
-    visitor.visitProperty(this);
+    visitor.visitUnaryExpression(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof TagLangVisitor) accept((TagLangVisitor)visitor);
     else super.accept(visitor);
+  }
+
+  @Override
+  @Nullable
+  public TagLangPrimaryExpression getPrimaryExpression() {
+    return findChildByClass(TagLangPrimaryExpression.class);
+  }
+
+  @Override
+  @Nullable
+  public TagLangUnaryExpression getUnaryExpression() {
+    return findChildByClass(TagLangUnaryExpression.class);
   }
 
 }

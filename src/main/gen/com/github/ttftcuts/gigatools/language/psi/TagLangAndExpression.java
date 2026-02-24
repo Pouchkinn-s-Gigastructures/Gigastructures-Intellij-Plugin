@@ -5,6 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface TagLangProperty extends PsiElement {
+public interface TagLangAndExpression extends PsiElement {
+
+  @NotNull
+  List<TagLangUnaryExpression> getUnaryExpressionList();
 
 }

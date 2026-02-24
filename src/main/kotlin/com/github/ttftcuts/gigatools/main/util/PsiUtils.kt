@@ -1,14 +1,19 @@
 package com.github.ttftcuts.gigatools.main.util
 
+import com.github.ttftcuts.gigatools.language.TagLangFile
+import com.github.ttftcuts.gigatools.language.TagLanguage
+import com.github.ttftcuts.gigatools.language.psi.TagLangExpression
 import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.search.PsiSearchHelper
+import com.intellij.util.IncorrectOperationException
 import icu.windea.pls.core.castOrNull
 import icu.windea.pls.core.collections.process
 import icu.windea.pls.core.findChild
@@ -249,5 +254,9 @@ object PsiUtils {
         val psiFile = file.toPsiFile(project) ?: error("PsiUtils.ResolveFile: Unable to find PsiFile: $path")
         val typedFile = psiFile.castOrNull<T>() ?: error("PsiUtils.ResolveFile: File $path is not a the expected type")
         return typedFile
+    }
+
+    fun parseTagLang(project: Project, input: String): TagLangExpression? {
+        return PsiFileFactory.getInstance(project).createFileFromText(TagLanguage, input).castOrNull<TagLangFile>()?.firstChild.castOrNull<TagLangExpression>()
     }
 }

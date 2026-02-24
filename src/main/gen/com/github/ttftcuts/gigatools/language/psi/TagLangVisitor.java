@@ -7,7 +7,27 @@ import com.intellij.psi.PsiElement;
 
 public class TagLangVisitor extends PsiElementVisitor {
 
-  public void visitProperty(@NotNull TagLangProperty o) {
+  public void visitAndExpression(@NotNull TagLangAndExpression o) {
+    visitPsiElement(o);
+  }
+
+  public void visitExpression(@NotNull TagLangExpression o) {
+    visitPsiElement(o);
+  }
+
+  public void visitOrExpression(@NotNull TagLangOrExpression o) {
+    visitPsiElement(o);
+  }
+
+  public void visitPrimaryExpression(@NotNull TagLangPrimaryExpression o) {
+    visitPsiElement(o);
+  }
+
+  public void visitTagExpression(@NotNull TagLangTagExpression o) {
+    visitPsiElement(o);
+  }
+
+  public void visitUnaryExpression(@NotNull TagLangUnaryExpression o) {
     visitPsiElement(o);
   }
 

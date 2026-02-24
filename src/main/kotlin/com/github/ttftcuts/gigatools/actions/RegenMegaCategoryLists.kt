@@ -1,5 +1,6 @@
 package com.github.ttftcuts.gigatools.actions
 
+import com.github.ttftcuts.gigatools.language.TagLangHelpers.evaluate
 import com.github.ttftcuts.gigatools.main.data.Consts
 import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.definitions.properties.DefinitionTag
@@ -55,8 +56,19 @@ class RegenMegaCategoryLists : DumbAwareAction() {
             ScriptedTrigger.regenerateCache(project)
             ScriptedEffect.regenerateCache(project)
 
-            println("Scripted triggers with tagged list data")
-            println(ScriptedTrigger.cache.values.filter { t -> t.taggedListInfo != null })
+            val taggedListTriggers = ScriptedTrigger.cache.values.filter { t -> t.taggedListInfo != null }
+
+            for (tList in taggedListTriggers) {
+                val info = tList.taggedListInfo!!
+                println("Scripted Trigger: ${tList.name}")
+
+                val allEntries = info.type.cache.values
+                for (entry in allEntries) {
+                    if (info.tagEvaluator.evaluate(entry)) {
+                        println(entry.name)
+                    }
+                }
+            }
 
 //            // families
 //            run {

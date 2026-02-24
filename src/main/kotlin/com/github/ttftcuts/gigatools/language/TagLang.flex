@@ -15,30 +15,24 @@ import com.github.ttftcuts.gigatools.language.psi.TagLangTypes;
 %eof{ return;
 %eof}
 
-CRLF=\R
 WHITE_SPACE=[\ \n\t\f]
-FIRST_VALUE_CHARACTER=[^ \n\f\\] | "\\"{CRLF} | "\\".
-VALUE_CHARACTER=[^\n\f\\] | "\\"{CRLF} | "\\".
-END_OF_LINE_COMMENT=("#"|"!")[^\r\n]*
-SEPARATOR=[:=]
-KEY_CHARACTER=[^:=\ \n\t\f\\] | "\\ "
-
-%state WAITING_VALUE
+TAG=\w+
 
 %%
 
-<YYINITIAL> {END_OF_LINE_COMMENT}                           { yybegin(YYINITIAL); return TagLangTypes.COMMENT; }
+<YYINITIAL> {
+    {WHITE_SPACE}+   { return TokenType.WHITE_SPACE; }
 
-<YYINITIAL> {KEY_CHARACTER}+                                { yybegin(YYINITIAL); return TagLangTypes.KEY; }
+    {TAG}            { return TagLangTypes.TAG; }
 
-<YYINITIAL> {SEPARATOR}                                     { yybegin(WAITING_VALUE); return TagLangTypes.SEPARATOR; }
+    "&"              { return TagLangTypes.AND_OP; }
+    "|"              { return TagLangTypes.OR_OP; }
+    "!"              { return TagLangTypes.NOT_OP; }
 
-<WAITING_VALUE> {CRLF}({CRLF}|{WHITE_SPACE})+               { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
+    "("              { return TagLangTypes.L_PAREN; }
+    ")"              { return TagLangTypes.R_PAREN; }
 
-<WAITING_VALUE> {WHITE_SPACE}+                              { yybegin(WAITING_VALUE); return TokenType.WHITE_SPACE; }
+    [^]              { return TokenType.BAD_CHARACTER; }
+}
 
-<WAITING_VALUE> {FIRST_VALUE_CHARACTER}{VALUE_CHARACTER}*   { yybegin(YYINITIAL); return TagLangTypes.VALUE; }
 
-({CRLF}|{WHITE_SPACE})+                                     { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
-
-[^]                                                         { return TokenType.BAD_CHARACTER; }

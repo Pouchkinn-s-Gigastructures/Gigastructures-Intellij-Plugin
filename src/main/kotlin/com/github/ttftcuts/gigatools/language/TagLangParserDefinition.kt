@@ -27,7 +27,6 @@ class TagLangParserDefinition: ParserDefinition {
 
     override fun createFile(viewProvider: FileViewProvider): PsiFile = TagLangFile(viewProvider)
 
-    companion object {
-        val FILE = IFileElementType(TagLanguage)
-    }
 }
+
+val FILE = IFileElementType(TagLanguage)

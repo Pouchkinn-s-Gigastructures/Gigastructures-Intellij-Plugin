@@ -27,6 +27,8 @@ open class Definition(override val def: ParadoxScriptDefinitionElement) : Defini
     val name get() = def.name
     val locName by lazy { PsiUtils.getElementName(def) }
 
+    val type: String get() = getDefinitionType(def)
+
     companion object {
 
 

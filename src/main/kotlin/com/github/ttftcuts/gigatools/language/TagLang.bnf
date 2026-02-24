@@ -12,8 +12,12 @@
     tokenTypeClass = "com.github.ttftcuts.gigatools.language.psi.TagTokenType"
 }
 
-tagFile ::= item_*
+tagFile ::= expression
 
-private item_ ::= (property|COMMENT|CRLF)
+expression ::= or_expression
 
-property ::= (KEY? SEPARATOR VALUE?) | KEY
+or_expression ::= and_expression (OR_OP and_expression)*
+and_expression ::= unary_expression (AND_OP unary_expression)*
+unary_expression ::= NOT_OP unary_expression | primary_expression
+primary_expression ::= tag_expression | L_PAREN expression R_PAREN
+tag_expression ::= TAG

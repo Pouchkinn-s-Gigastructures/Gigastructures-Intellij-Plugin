@@ -20,10 +20,12 @@ class TagLangSyntaxHighlighter(): SyntaxHighlighterBase() {
     override fun getTokenHighlights(tokenType: IElementType?): Array<out TextAttributesKey?> {
         if (tokenType == null) { return EMPTY_KEYS }
         return when(tokenType) {
-            TagLangTypes.SEPARATOR -> SEPARATOR_KEYS
-            TagLangTypes.KEY -> KEY_KEYS
-            TagLangTypes.VALUE -> VALUE_KEYS
-            TagLangTypes.COMMENT -> COMMENT_KEYS
+            TagLangTypes.TAG -> TAG_KEYS
+            TagLangTypes.AND_OP -> OPERATOR_KEYS
+            TagLangTypes.OR_OP -> OPERATOR_KEYS
+            TagLangTypes.NOT_OP -> OPERATOR_KEYS
+            TagLangTypes.L_PAREN -> PARENTHESIS_KEYS
+            TagLangTypes.R_PAREN -> PARENTHESIS_KEYS
             TokenType.BAD_CHARACTER -> BAD_CHAR_KEYS
             else -> EMPTY_KEYS
         }
@@ -31,18 +33,16 @@ class TagLangSyntaxHighlighter(): SyntaxHighlighterBase() {
 
     companion object {
         // attribute keys
-        val SEPARATOR = createTextAttributesKey("SIMPLE_SEPARATOR", DefaultLanguageHighlighterColors.OPERATION_SIGN)
-        val KEY = createTextAttributesKey("SIMPLE_KEY", DefaultLanguageHighlighterColors.KEYWORD)
-        val VALUE = createTextAttributesKey("SIMPLE_VALUE", DefaultLanguageHighlighterColors.STRING)
-        val COMMENT = createTextAttributesKey("SIMPLE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
-        val BAD_CHARACTER = createTextAttributesKey("SIMPLE_BAD_CHARACTER", HighlighterColors.BAD_CHARACTER)
+        val OPERATOR = createTextAttributesKey("TAGLANG_OPERATOR", DefaultLanguageHighlighterColors.OPERATION_SIGN)
+        val TAG = createTextAttributesKey("TAGLANG_TAG", DefaultLanguageHighlighterColors.STRING)
+        val PARENTHESIS = createTextAttributesKey("TAGLANG_PARENTHESIS", DefaultLanguageHighlighterColors.PARENTHESES)
+        val BAD_CHARACTER = createTextAttributesKey("TAGLANG_BAD_CHARACTER", HighlighterColors.BAD_CHARACTER)
 
         // attribute arrays
-        val BAD_CHAR_KEYS = arrayOf<TextAttributesKey>(BAD_CHARACTER)
-        val SEPARATOR_KEYS = arrayOf<TextAttributesKey>(SEPARATOR)
-        val KEY_KEYS = arrayOf<TextAttributesKey>(KEY)
-        val VALUE_KEYS = arrayOf<TextAttributesKey>(VALUE)
-        val COMMENT_KEYS = arrayOf<TextAttributesKey>(COMMENT)
+        val OPERATOR_KEYS = arrayOf(OPERATOR)
+        val TAG_KEYS = arrayOf(TAG)
+        val PARENTHESIS_KEYS = arrayOf(PARENTHESIS)
+        val BAD_CHAR_KEYS = arrayOf(BAD_CHARACTER)
         val EMPTY_KEYS = arrayOf<TextAttributesKey>()
     }
 }
