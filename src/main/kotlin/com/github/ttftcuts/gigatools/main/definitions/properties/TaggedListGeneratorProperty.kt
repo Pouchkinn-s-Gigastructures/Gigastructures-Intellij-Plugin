@@ -1,18 +1,25 @@
 package com.github.ttftcuts.gigatools.main.definitions.properties
 
-import com.github.ttftcuts.gigatools.language.TagLangHelpers.evaluate
+import com.github.ttftcuts.gigatools.annotation.GigaToolsAttributesKeys
 import com.github.ttftcuts.gigatools.language.psi.TagLangExpression
 import com.github.ttftcuts.gigatools.main.data.Consts
 import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.github.ttftcuts.gigatools.main.definitions.DefinitionHolder
 import com.github.ttftcuts.gigatools.main.definitions.PropertyCompanion
+import com.github.ttftcuts.gigatools.main.definitions.PropertyData
 import com.github.ttftcuts.gigatools.main.lists.ListFormat
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
-import com.github.ttftcuts.gigatools.main.wrappers.Megastructure
+import com.github.ttftcuts.gigatools.main.util.TextUtils
 import com.github.ttftcuts.gigatools.main.wrappers.WrapperCompanion
+import com.intellij.codeInsight.completion.CompletionParameters
+import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInspection.ProblemHighlightType
+import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
+import com.intellij.openapi.util.TextRange
+import com.intellij.util.ProcessingContext
 import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 
 class TaggedListGeneratorProperty(override val def: ParadoxScriptDefinitionElement): DefinitionHolder, ITaggedListGeneratorProperty {
@@ -28,6 +35,115 @@ class TaggedListGeneratorProperty(override val def: ParadoxScriptDefinitionEleme
         override fun validForDefinitionType(type: String): Boolean {
             return type == "scripted_trigger" || type == "scripted_effect"
         }
+
+        override fun annotate(holder: AnnotationHolder, data: PropertyData) {
+            val startOffset = data.element.textRange.startOffset + data.propertyTextOffset
+            val parts = TaggedListInfo.partsPattern.findAll(data.propertyText)
+
+            var hasType = false
+            var hasTemplate = false
+            var hasTags = false
+            var hasProperties = false
+
+            for (part in parts) {
+                val name = part.groups[1] ?: error("TaggedList annotator part name match missing")
+                val nameValue = name.value.trim()
+                val text = part.groups[2] ?: error("TaggedList annotator part text match missing")
+                val textValue = text.value.trim()
+
+                val markerRange = TextRange.from(startOffset + part.range.first, 1)
+                val partRange = TextUtils.range(part.range).shiftRight(startOffset)
+                val nameRange = TextUtils.range(name.range).shiftRight(startOffset)
+                val textRange = TextUtils.range(text.range).shiftRight(startOffset)
+
+                val leftRange = TextRange.from(name.range.last+1, 1).shiftRight(startOffset)
+                val rightRange = TextRange.from(part.range.last, 1).shiftRight(startOffset)
+
+                holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(markerRange).textAttributes(GigaToolsAttributesKeys.PROPERTY_KEY).create()
+
+                holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(leftRange).textAttributes( GigaToolsAttributesKeys.PROPERTY_PARENS).create()
+                holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(rightRange).textAttributes( GigaToolsAttributesKeys.PROPERTY_PARENS).create()
+
+                fun annotatePart(text: String) = holder.newAnnotation(HighlightSeverity.INFORMATION, text).range(nameRange).textAttributes( GigaToolsAttributesKeys.PROPERTY_NAME_KEY).create()
+
+                when(nameValue) {
+                    "type" -> {
+                        if (hasType) {
+                            holder.newAnnotation(HighlightSeverity.WARNING, "Duplicate type section").range(partRange).highlightType( ProblemHighlightType.LIKE_UNKNOWN_SYMBOL).create()
+                        } else {
+                            hasType = true
+                            annotatePart("Definition category to use for the list")
+
+                            // check against available tagged def types
+                            val type = Consts.DefinitionTypes[textValue]
+                            if (textValue.contains(" ") || type == null) {
+                                holder.newAnnotation(HighlightSeverity.WARNING, "Invalid definition category").range(textRange).highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL).create()
+                            } else {
+                                holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(textRange).textAttributes(GigaToolsAttributesKeys.PROPERTY_VALUE).create()
+                            }
+                        }
+                    }
+                    "template" -> {
+                        if (hasTemplate) {
+                            holder.newAnnotation(HighlightSeverity.WARNING, "Duplicate template section").range(partRange).highlightType( ProblemHighlightType.LIKE_UNKNOWN_SYMBOL).create()
+                        } else {
+                            hasTemplate = true
+                            annotatePart("Which list template (from the tool data file) to use when generating the list")
+
+                            // check against the template list
+                            val type = ToolData.listFormats[textValue]
+                            if (textValue.contains(" ") || type == null) {
+                                holder.newAnnotation(HighlightSeverity.WARNING, "Invalid template name").range(textRange).highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL).create()
+                            } else {
+                                holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(textRange).textAttributes(GigaToolsAttributesKeys.PROPERTY_VALUE).create()
+                            }
+                        }
+                    }
+                    "tags" -> {
+                        if (hasTags) {
+                            holder.newAnnotation(HighlightSeverity.WARNING, "Duplicate tags section").range(partRange).highlightType( ProblemHighlightType.LIKE_UNKNOWN_SYMBOL).create()
+                        } else {
+                            hasTags = true
+                            annotatePart("Tag boolean expression. Supports and, or, not, and parentheses (&, |, !, () )")
+                        }
+                    }
+                    "parameters" -> {
+                        if (hasProperties) {
+                            holder.newAnnotation(HighlightSeverity.WARNING, "Duplicate parameters section").range(partRange).highlightType( ProblemHighlightType.LIKE_UNKNOWN_SYMBOL).create()
+                        } else {
+                            hasProperties = true
+                            annotatePart("Parameter key:value pairs, for filling in extra data in the list template")
+
+                            val params = TaggedListInfo.parameterPattern.findAll(text.value)
+                            val paramOffset = startOffset + text.range.first
+                            for (param in params) {
+                                val key = param.groups[1] ?: error("TaggedList annotator parameter key match missing")
+                                val value = param.groups[2] ?: error("TaggedList annotator parameter value match missing")
+
+                                holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(TextUtils.range(param.range).shiftRight(paramOffset)).textAttributes(GigaToolsAttributesKeys.PROPERTY_GENERAL).create()
+                                holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(TextUtils.range(key.range).shiftRight(paramOffset)).textAttributes(GigaToolsAttributesKeys.PROPERTY_NAME_KEY).create()
+                                holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(TextUtils.range(value.range).shiftRight(paramOffset)).textAttributes(GigaToolsAttributesKeys.PROPERTY_VALUE).create()
+                            }
+                        }
+                    }
+                    else -> {
+                        holder.newAnnotation(HighlightSeverity.WARNING, "Invalid section").range(nameRange).highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL).create()
+                    }
+                }
+            }
+
+            if (!(hasType && hasTemplate && hasTags)) {
+                holder
+                    .newAnnotation(HighlightSeverity.WARNING, "Tagged list requires type, template, and tags sections.")
+                    .range(TextRange.from(startOffset, data.propertyText.length))
+                    .highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
+                    .create()
+            }
+        }
+
+        override fun addCompletions(data: PropertyData, parameters: CompletionParameters, context: ProcessingContext, resultSet: CompletionResultSet) {
+            super.addCompletions(data, parameters, context, resultSet)
+        }
     }
 }
 
@@ -38,7 +154,7 @@ interface ITaggedListGeneratorProperty: DefinitionHolder {
 class TaggedListInfo(val type: WrapperCompanion<*>, val template: ListFormat, val tagEvaluator: TagLangExpression, val parameters: Map<String,String>) {
 
     companion object {
-        val partsPattern by lazy { Regex("\\@(\\w+)\\(([^@]+)\\)") }
+        val partsPattern by lazy { Regex("\\@(\\w+)\\(([^@]*)\\)") }
         val parameterPattern by lazy { Regex("(\\w+):\\s+(\\w+)")}
 
         fun parse(project: Project, input: String): TaggedListInfo? {
@@ -58,7 +174,7 @@ class TaggedListInfo(val type: WrapperCompanion<*>, val template: ListFormat, va
                 when(name) {
                     "type" -> {
                         if (type == null) {
-                            type = Consts.DefinitionTypes.find { type -> type.typeExpression == text }
+                            type = Consts.DefinitionTypes[text]
                         } else {
                             error("TaggedList part 'type' already has a value")
                         }

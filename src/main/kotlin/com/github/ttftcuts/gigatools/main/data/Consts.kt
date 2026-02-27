@@ -24,13 +24,13 @@ enum class EcoModifierDomain(name: String) {
 }
 
 object Consts {
-    val DefinitionTypes: Set<WrapperCompanion<*>> = setOf(
+    val DefinitionTypes: Map<String, WrapperCompanion<*>> = setOf(
         EconomicCategory,
         Megastructure,
         ScriptedEffect,
         ScriptedTrigger,
         StrategicResource,
-    )
+    ).associateBy { e -> e.typeExpression }
 
     val DefinitionPropertyTypes: Set<PropertyCompanion> = setOf(
         TagProperty,

@@ -1,5 +1,7 @@
 package com.github.ttftcuts.gigatools.main.util
 
+import com.intellij.openapi.util.TextRange
+
 object TextUtils {
     fun StringBuilder.appendGeneratedFileWarning() {
         appendLine("# WARNING:")
@@ -24,4 +26,6 @@ object TextUtils {
         appendLine("#".repeat(120))
         appendLine()
     }
+
+    fun range(range: IntRange): TextRange = TextRange.create(range.first, range.last+1)
 }
