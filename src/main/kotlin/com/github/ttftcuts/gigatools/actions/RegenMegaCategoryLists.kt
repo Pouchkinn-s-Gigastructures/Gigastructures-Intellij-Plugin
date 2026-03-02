@@ -7,6 +7,7 @@ import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.github.ttftcuts.gigatools.main.definitions.properties.DefinitionTag
 import com.github.ttftcuts.gigatools.main.definitions.properties.ITaggedListGeneratorProperty
 import com.github.ttftcuts.gigatools.main.lists.ListBuilders
+import com.github.ttftcuts.gigatools.main.util.EditorUtils
 import com.github.ttftcuts.gigatools.main.util.EditorUtils.showMessage
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.replaceContents
@@ -17,6 +18,7 @@ import com.github.ttftcuts.gigatools.main.wrappers.EconomicCategory
 import com.github.ttftcuts.gigatools.main.wrappers.Megastructure
 import com.github.ttftcuts.gigatools.main.wrappers.ScriptedEffect
 import com.github.ttftcuts.gigatools.main.wrappers.ScriptedTrigger
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.WriteCommandAction
@@ -210,8 +212,13 @@ class RegenMegaCategoryLists : DumbAwareAction() {
             run {
                 // get all the triggers and effects with list data
                 val tagged = mutableListOf<ITaggedListGeneratorProperty>()
-                tagged.addAll(ScriptedTrigger.cache.values.filter { t -> t.taggedListInfo != null })
-                tagged.addAll(ScriptedEffect.cache.values.filter { t -> t.taggedListInfo != null })
+                try {
+                    tagged.addAll(ScriptedTrigger.cache.values.filter { t -> t.taggedListInfo != null })
+                    tagged.addAll(ScriptedEffect.cache.values.filter { t -> t.taggedListInfo != null })
+                } catch (e: IllegalStateException) {
+                    showMessage("Tagged List generation failed:\n${e.message}", title = NAME, notificationType = NotificationType.ERROR)
+                    return@run
+                }
 
                 // go through each one
                 for (tList in tagged) {
