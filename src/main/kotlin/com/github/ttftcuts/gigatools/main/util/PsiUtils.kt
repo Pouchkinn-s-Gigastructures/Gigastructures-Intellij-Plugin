@@ -13,22 +13,22 @@ import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.search.PsiSearchHelper
-import com.intellij.util.IncorrectOperationException
 import icu.windea.pls.core.castOrNull
 import icu.windea.pls.core.collections.process
 import icu.windea.pls.core.findChild
 import icu.windea.pls.core.toPsiFile
-import icu.windea.pls.ep.resolve.ParadoxInlineSupport
+import icu.windea.pls.ep.resolve.ParadoxInlineScriptInlineSupport
 import icu.windea.pls.lang.fileInfo
+import icu.windea.pls.lang.psi.properties
 import icu.windea.pls.lang.search.ParadoxFilePathSearch
 import icu.windea.pls.lang.search.ParadoxLocalisationSearch
 import icu.windea.pls.lang.search.selector.*
 import icu.windea.pls.lang.util.ParadoxLocaleManager
-import icu.windea.pls.lang.util.dataFlow.*
-import icu.windea.pls.lang.util.renderers.ParadoxLocalisationTextRenderer
+import icu.windea.pls.lang.util.renderers.ParadoxLocalisationTextPlainRenderer
 import icu.windea.pls.localisation.psi.ParadoxLocalisationElementFactory
 import icu.windea.pls.localisation.psi.ParadoxLocalisationFile
 import icu.windea.pls.localisation.psi.ParadoxLocalisationPropertyList
+import icu.windea.pls.model.ParadoxLocalisationType
 import icu.windea.pls.model.ParadoxRootInfo
 import icu.windea.pls.script.ParadoxScriptLanguage
 import icu.windea.pls.script.psi.*
@@ -95,13 +95,13 @@ object PsiUtils {
         return null
     }
 
-    fun findAssociatedDefinition(element: PsiElement): ParadoxScriptDefinitionElement? {
+    fun findAssociatedDefinition(element: PsiElement): ParadoxDefinitionElement? {
         var nextElement: PsiElement? = nextNonWhiteSpaceSiblingLine(element)
 
         while (nextElement != null) {
             if (Definition.isPropertyComment(nextElement)) {
                 nextElement = nextNonWhiteSpaceSiblingLine(nextElement)
-            } else if (nextElement is ParadoxScriptDefinitionElement) {
+            } else if (nextElement is ParadoxDefinitionElement) {
                 return nextElement
             } else {
                 return null
@@ -110,11 +110,11 @@ object PsiUtils {
         return null
     }
 
-    fun getElementName(element: ParadoxScriptDefinitionElement) : String {
+    fun getElementName(element: ParadoxDefinitionElement) : String {
         val locale = ParadoxLocaleManager.getLocaleConfig("l_english") // english for standardisation
         val selector = selector(element.project, element).localisation().contextSensitive().preferLocale(locale)
-        val loc = ParadoxLocalisationSearch.search(element.name, selector).find() ?: return element.name
-        val rendered = ParadoxLocalisationTextRenderer().render(loc).replace("\u200B", "")
+        val loc = ParadoxLocalisationSearch.search(element.name, ParadoxLocalisationType.Normal, selector).find() ?: return element.name
+        val rendered = ParadoxLocalisationTextPlainRenderer().render(loc).replace("\u200B", "")
         return rendered.ifEmpty { loc.value ?: element.name }
     }
 
@@ -140,7 +140,7 @@ object PsiUtils {
         if (language != ParadoxScriptLanguage) return null
         if (propertyName != null && propertyName.isEmpty()) return ResolvedElement(this as ParadoxScriptProperty, DEFAULT_RESOLVER)
         val block = when {
-            this is ParadoxScriptDefinitionElement -> this.block
+            this is ParadoxDefinitionElement -> this.block
             this is ParadoxScriptBlock -> this
             else -> null
         }
@@ -165,8 +165,7 @@ object PsiUtils {
 
         //println("start process")
 
-        //block?.processProperty(conditional, true) {
-        block?.properties()?.options(conditional = conditional, inline = true)?.process {
+        block?.properties(conditional, true)?.process {
             //println("visited: ${it.name}, ${it.javaClass}")
             // if the current file isn't the parameter file, pop the stack
             //println("file: ${it.fileInfo?.path} - parameterFile: $parameterFile - name: ${it.name}")
@@ -180,7 +179,7 @@ object PsiUtils {
             // if the element appears to be an inline script
             if (it.name.equals("inline_script", true) && it.fileInfo != null) {
                 // get the element for it to get the file name
-                val inlineElement = ParadoxInlineSupport.getInlinedElement(it)
+                val inlineElement = ParadoxInlineScriptInlineSupport().getInlinedElement(it)
 
                 if (inlineElement != null && inlineElement.containingFile.fileInfo != null) {
                     val inlineFilePath = inlineElement.containingFile.fileInfo!!.path
@@ -194,7 +193,7 @@ object PsiUtils {
                         //println(inlineBlock.propertyList)
 
                         //val replaceParameters = parameterStack.last()
-                        for (property in inlineBlock.propertyList) {
+                        for (property in inlineBlock.properties()) {
                             // read in parameters
                             if (property.name != "script") {
                                 val name = doReplacement(property.name)

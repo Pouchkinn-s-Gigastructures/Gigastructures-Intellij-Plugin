@@ -6,7 +6,7 @@ import com.github.ttftcuts.gigatools.main.util.YAMLUtils.asBool
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.asText
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.getItemsAndCast
 import com.github.ttftcuts.gigatools.main.util.YAMLUtils.getValueAndCast
-import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
+import icu.windea.pls.script.psi.ParadoxDefinitionElement
 import io.ktor.http.escapeIfNeeded
 import org.jetbrains.yaml.psi.YAMLKeyValue
 import org.jetbrains.yaml.psi.YAMLMapping
@@ -38,7 +38,7 @@ class DefinitionTag(val name: String, val shortDesc: String, val fullDesc: Strin
             return DefinitionTag(name, desc, fullDesc, classify, incompatibleList)
         }
 
-        fun getTags(definition: ParadoxScriptDefinitionElement) : Set<DefinitionTag>? {
+        fun getTags(definition: ParadoxDefinitionElement) : Set<DefinitionTag>? {
             // get both property sets
             val data = Definition.getAttachedProperties(definition).firstOrNull { p -> p.type == TagProperty }
             val fileData = Definition.getWholeFileProperties(definition).firstOrNull { p -> p.type == TagProperty }
@@ -77,6 +77,6 @@ class DefinitionTag(val name: String, val shortDesc: String, val fullDesc: Strin
             return tags
         }
 
-        fun getTagNames(definition: ParadoxScriptDefinitionElement) : Set<String>? { return getTags(definition)?.map { tag -> tag.name }?.toSet() }
+        fun getTagNames(definition: ParadoxDefinitionElement) : Set<String>? { return getTags(definition)?.map { tag -> tag.name }?.toSet() }
     }
 }

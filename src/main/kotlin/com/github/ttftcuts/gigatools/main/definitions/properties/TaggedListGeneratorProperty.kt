@@ -20,9 +20,9 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.util.ProcessingContext
-import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
+import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
-class TaggedListGeneratorProperty(override val def: ParadoxScriptDefinitionElement): DefinitionHolder, ITaggedListGeneratorProperty {
+class TaggedListGeneratorProperty(override val def: ParadoxDefinitionElement): DefinitionHolder, ITaggedListGeneratorProperty {
 
     override val taggedListInfo by lazy {
         val data = Definition.getAttachedProperties(def).firstOrNull { p -> p.type == TaggedListGeneratorProperty }

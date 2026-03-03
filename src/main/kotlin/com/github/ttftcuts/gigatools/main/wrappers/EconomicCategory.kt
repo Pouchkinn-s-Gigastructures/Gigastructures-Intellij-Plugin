@@ -4,9 +4,9 @@ import com.github.ttftcuts.gigatools.main.data.EcoModifierDomain
 import com.github.ttftcuts.gigatools.main.data.EcoModifierType
 import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.findPropertyAndInline
-import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
+import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
-class EconomicCategory(def: ParadoxScriptDefinitionElement) : Definition(def) {
+class EconomicCategory(inDef: ParadoxDefinitionElement) : Definition(inDef) {
     val parent: EconomicCategory? by lazy {
         var parentData = def.findPropertyAndInline("parent") ?: return@lazy null
         if (parentData.element.value == null) return@lazy null

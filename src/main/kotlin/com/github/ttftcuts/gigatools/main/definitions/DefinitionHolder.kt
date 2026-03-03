@@ -1,9 +1,7 @@
 package com.github.ttftcuts.gigatools.main.definitions
 
-import com.github.ttftcuts.gigatools.main.util.PsiUtils.isVanilla
-import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
+import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
 interface DefinitionHolder {
-    val def: ParadoxScriptDefinitionElement
+    val def: ParadoxDefinitionElement
 }
-

@@ -13,9 +13,9 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.util.TextRange
 import com.intellij.util.ProcessingContext
-import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
+import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
-class TagProperty(override val def: ParadoxScriptDefinitionElement) : DefinitionHolder, ITagProperty {
+class TagProperty(override val def: ParadoxDefinitionElement) : DefinitionHolder, ITagProperty {
     override val tags: Map<String,DefinitionTag> by lazy { DefinitionTag.getTags(def)?.associate { tag -> tag.name to tag }?.toMap() ?: mapOf() }
     override val derivedTags: MutableMap<String,DefinitionTag> = mutableMapOf()
 

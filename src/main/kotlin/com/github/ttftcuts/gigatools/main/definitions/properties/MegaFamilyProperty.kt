@@ -13,9 +13,9 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.util.ProcessingContext
 import icu.windea.pls.core.splitByBlank
-import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
+import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
-class MegaFamilyProperty(override val def: ParadoxScriptDefinitionElement) : DefinitionHolder, IMegaFamilyProperty {
+class MegaFamilyProperty(override val def: ParadoxDefinitionElement) : DefinitionHolder, IMegaFamilyProperty {
     override var megaFamily: String? = null
 
     companion object: PropertyCompanion("Family", "Override for megastructure family names. Only needed if the mega is not connected via upgrades and the name does not reduce to the same family name.") {
@@ -25,7 +25,7 @@ class MegaFamilyProperty(override val def: ParadoxScriptDefinitionElement) : Def
             return type == "megastructure"
         }
 
-        fun getFamilyOverride(def: ParadoxScriptDefinitionElement): String? {
+        fun getFamilyOverride(def: ParadoxDefinitionElement): String? {
             val data = Definition.getAttachedProperties(def).firstOrNull{ p -> p.type == MegaFamilyProperty }
                 ?: Definition.getWholeFileProperties(def).firstOrNull{ p -> p.type == MegaFamilyProperty } ?: return null
 

@@ -4,26 +4,23 @@ import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.github.ttftcuts.gigatools.main.definitions.properties.IMegaFamilyProperty
 import com.github.ttftcuts.gigatools.main.definitions.properties.MegaFamilyProperty
-import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.findPropertyAndInline
 import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit
 import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit.Companion.economicCategory
 import com.intellij.openapi.project.Project
+import icu.windea.pls.lang.psi.properties
+import icu.windea.pls.lang.psi.values
 import icu.windea.pls.script.psi.ParadoxScriptBlockElement
-import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
-import icu.windea.pls.script.psi.valueList
+import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
-class Megastructure(override val def: ParadoxScriptDefinitionElement) : Definition(def), EconomicUnit, IMegaFamilyProperty by MegaFamilyProperty(def) {
-    // what mega family (build chain) does this mega belong to?
-    // e.g. "is this a dyson sphere?"
-    //var megaFamily: String? = null
+class Megastructure(override val def: ParadoxDefinitionElement) : Definition(def), EconomicUnit, IMegaFamilyProperty by MegaFamilyProperty(def) {
 
     val upgradeFrom : Set<Megastructure> by lazy {
         val upgradeData = def.findPropertyAndInline("upgrade_from") ?: return@lazy setOf()
         val upgradeBlock = upgradeData.element.propertyValue
         if (upgradeBlock !is ParadoxScriptBlockElement) { return@lazy setOf() }
 
-        upgradeBlock.valueList.mapNotNull {
+        upgradeBlock.values().mapNotNull {
             v ->
             //println("in ${def.name}: $v, ${v.javaClass}");
             resolve(def.project, upgradeData.resolver(v.value))
@@ -146,13 +143,14 @@ class Megastructure(override val def: ParadoxScriptDefinitionElement) : Definiti
                 // if potential but it's busted, not buildable
                 val block = potential.element.propertyValue as? ParadoxScriptBlockElement ?: continue
 
+                val blockProperties = block.properties(inline = true).toList()
                 // if the potential is empty, buildable
-                if (block.propertyList.isEmpty()) {
+                if (blockProperties.isEmpty()) {
                     tagBuildable(firstStage); continue
                 }
                 // if the potential is always = no, not buildable
-                else if (block.propertyList.count() == 1) {
-                    val first = block.propertyList.first()
+                else if (blockProperties.count() == 1) {
+                    val first = blockProperties.first()
                     if (first.name.lowercase() == "always" && first.value?.lowercase() == "no") {
                         continue
                     }

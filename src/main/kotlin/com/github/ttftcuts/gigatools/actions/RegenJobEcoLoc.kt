@@ -11,19 +11,17 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.DumbAwareAction
 import icu.windea.pls.core.castOrNull
-import icu.windea.pls.core.children
 import icu.windea.pls.core.findChild
 import icu.windea.pls.core.toPsiFile
 import icu.windea.pls.lang.search.ParadoxFilePathSearch
 import icu.windea.pls.lang.search.ParadoxLocalisationSearch
-import icu.windea.pls.lang.search.selector.file
 import icu.windea.pls.lang.search.selector.locale
-import icu.windea.pls.lang.search.selector.localisation
 import icu.windea.pls.lang.search.selector.selector
 import icu.windea.pls.lang.util.ParadoxLocaleManager
 import icu.windea.pls.localisation.psi.ParadoxLocalisationElementFactory
 import icu.windea.pls.localisation.psi.ParadoxLocalisationFile
 import icu.windea.pls.localisation.psi.ParadoxLocalisationPropertyList
+import icu.windea.pls.model.ParadoxLocalisationType
 
 class RegenJobEcoLoc : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -78,7 +76,7 @@ class RegenJobEcoLoc : DumbAwareAction() {
                 if (!test) {
                     return
                 }
-                val element = ParadoxLocalisationSearch.search(key, selector(project, project.projectFile)
+                val element = ParadoxLocalisationSearch.search(key, ParadoxLocalisationType.Normal, selector(project, project.projectFile)
                     .localisation().locale(locale)).find()
 
                 if (element == null || !element.isVanilla()) {

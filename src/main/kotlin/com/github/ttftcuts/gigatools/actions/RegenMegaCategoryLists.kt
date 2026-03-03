@@ -10,6 +10,7 @@ import com.github.ttftcuts.gigatools.main.lists.ListBuilders
 import com.github.ttftcuts.gigatools.main.util.EditorUtils
 import com.github.ttftcuts.gigatools.main.util.EditorUtils.showMessage
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
+import com.github.ttftcuts.gigatools.main.util.PsiUtils.findPropertyAndInline
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.replaceContents
 import com.github.ttftcuts.gigatools.main.util.TextUtils.appendEOFComment
 import com.github.ttftcuts.gigatools.main.util.TextUtils.appendGeneratedFileWarning
@@ -23,6 +24,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.DumbAwareAction
+import icu.windea.pls.lang.psi.properties
 import icu.windea.pls.script.psi.ParadoxScriptFile
 
 class RegenMegaCategoryLists : DumbAwareAction() {
@@ -60,6 +62,7 @@ class RegenMegaCategoryLists : DumbAwareAction() {
 
             ScriptedTrigger.regenerateCache(project)
             ScriptedEffect.regenerateCache(project)
+
 
             // families
             run {

@@ -7,19 +7,19 @@ import com.github.ttftcuts.gigatools.main.definitions.properties.ITagProperty
 import com.github.ttftcuts.gigatools.main.definitions.properties.TagProperty
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.isVanilla
-import com.intellij.codeInspection.ProblemHighlightType
-import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.findTopmostParentOfType
 import icu.windea.pls.lang.definitionInfo
 import icu.windea.pls.lang.search.ParadoxDefinitionSearch
-import icu.windea.pls.lang.search.selector.*
-import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
+import icu.windea.pls.lang.search.selector.distinctByName
+import icu.windea.pls.lang.search.selector.selector
+import icu.windea.pls.script.psi.ParadoxDefinitionElement
 import icu.windea.pls.script.psi.ParadoxScriptRootBlock
 
-open class Definition(override val def: ParadoxScriptDefinitionElement) : DefinitionHolder, ITagProperty by TagProperty(def) {
+open class Definition(override val def: ParadoxDefinitionElement) : ITagProperty by TagProperty(def) {
+
     override fun toString(): String {
         return "(${this.javaClass.simpleName}: ${def.name})"
     }
@@ -33,7 +33,7 @@ open class Definition(override val def: ParadoxScriptDefinitionElement) : Defini
 
 
         fun resolve(project: Project, type: String, id: String) : Definition? {
-            val found = ParadoxDefinitionSearch.search(id,type, selector(project, project.projectFile).definition().distinctByName()).find() ?: return null
+            val found = ParadoxDefinitionSearch.search(id,type, selector(project, project.projectFile).definition().distinctByName()).find()?.element ?: return null
             return Definition(found)
         }
 
@@ -55,11 +55,11 @@ open class Definition(override val def: ParadoxScriptDefinitionElement) : Defini
 
             // only if there are script definitions in the file
             if (element.parent.children.isEmpty()) { return null }
-            val scriptElements = element.parent.children.filter { e-> e is ParadoxScriptDefinitionElement }
+            val scriptElements = element.parent.children.filter { e-> e is ParadoxDefinitionElement }
             if (scriptElements.isEmpty()) { return null }
 
             // use the first child to determine what kind of definitions this file "should" have
-            val fileDefType = getDefinitionType(scriptElements.first() as ParadoxScriptDefinitionElement)
+            val fileDefType = getDefinitionType(scriptElements.first() as ParadoxDefinitionElement)
 
             // snip down the text range
             var textOffset = PREFIX.length
@@ -153,7 +153,7 @@ open class Definition(override val def: ParadoxScriptDefinitionElement) : Defini
             return false
         }
 
-        fun getDefinitionType(definition: ParadoxScriptDefinitionElement): String {
+        fun getDefinitionType(definition: ParadoxDefinitionElement): String {
             return definition.definitionInfo?.typeConfig?.name ?: "unknown"
         }
     }

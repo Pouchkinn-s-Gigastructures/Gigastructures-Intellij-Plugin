@@ -13,7 +13,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiComment
 import com.intellij.util.ProcessingContext
 import icu.windea.pls.lang.*
-import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
+import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
 class DefinitionPropertyCompletionContributor : CompletionContributor() {
     init {
@@ -31,7 +31,7 @@ class DefinitionPropertyCompletionContributor : CompletionContributor() {
 
 //                    // find the next element and check that it's a definition
 //                    val nextElement = PsiUtils.nextNonWhiteSpaceSibling(comment)
-//                    if (nextElement !is ParadoxScriptDefinitionElement) { return }
+//                    if (nextElement !is ParadoxDefinitionElement) { return }
 //                    // get the valid tags for the definition's type
 //                    val elementType = nextElement.definitionInfo?.typeConfig?.name ?: "unknown"
 //                    val validTags = ToolData.definitionTags[elementType] ?: return

@@ -4,9 +4,9 @@ import com.github.ttftcuts.gigatools.main.data.Consts
 import com.github.ttftcuts.gigatools.main.definitions.DefinitionCache
 import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.intellij.openapi.project.Project
-import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
+import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
-open class WrapperCompanion<T: Definition>(val typeExpression: String, val factory: (ParadoxScriptDefinitionElement) -> T) {
+open class WrapperCompanion<T: Definition>(val typeExpression: String, val factory: (ParadoxDefinitionElement) -> T) {
     val cache = DefinitionCache<T>(typeExpression, factory)
 
     fun regenerateCache(project: Project) {
