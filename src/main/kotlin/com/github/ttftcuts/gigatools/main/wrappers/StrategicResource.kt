@@ -1,9 +1,9 @@
 package com.github.ttftcuts.gigatools.main.wrappers
 
 import com.github.ttftcuts.gigatools.main.definitions.Definition
-import icu.windea.pls.script.psi.ParadoxDefinitionElement
+import com.github.ttftcuts.gigatools.main.definitions.DefinitionHolder
 
-class StrategicResource(def: ParadoxDefinitionElement) : Definition(def) {
+class StrategicResource(def: DefinitionHolder) : Definition(def) {
 
     companion object : WrapperCompanion<StrategicResource>("resource", ::StrategicResource)
 }

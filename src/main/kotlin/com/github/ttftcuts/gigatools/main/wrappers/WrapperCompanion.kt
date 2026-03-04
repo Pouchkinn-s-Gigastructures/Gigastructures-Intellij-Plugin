@@ -1,12 +1,11 @@
 package com.github.ttftcuts.gigatools.main.wrappers
 
-import com.github.ttftcuts.gigatools.main.data.Consts
 import com.github.ttftcuts.gigatools.main.definitions.DefinitionCache
 import com.github.ttftcuts.gigatools.main.definitions.Definition
+import com.github.ttftcuts.gigatools.main.definitions.DefinitionHolder
 import com.intellij.openapi.project.Project
-import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
-open class WrapperCompanion<T: Definition>(val typeExpression: String, val factory: (ParadoxDefinitionElement) -> T) {
+open class WrapperCompanion<T: Definition>(val typeExpression: String, val factory: (DefinitionHolder) -> T) {
     val cache = DefinitionCache<T>(typeExpression, factory)
 
     fun regenerateCache(project: Project) {

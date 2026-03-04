@@ -4,9 +4,8 @@ import com.intellij.openapi.project.Project
 import icu.windea.pls.lang.search.ParadoxDefinitionSearch
 import icu.windea.pls.lang.search.selector.distinctByName
 import icu.windea.pls.lang.search.selector.selector
-import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
-class DefinitionCache<T : Definition>(val typeExpression: String, val factory: (ParadoxDefinitionElement) -> T ) {
+class DefinitionCache<T : Definition>(val typeExpression: String, val factory: (DefinitionHolder) -> T ) {
     private var resolvedAll = false
     val cache : MutableMap<String, T?> = mutableMapOf()
 
@@ -25,7 +24,7 @@ class DefinitionCache<T : Definition>(val typeExpression: String, val factory: (
     fun resolve(project: Project, id: String) : T? {
         if (cache.containsKey(id)) { return cache[id] }
         val found = ParadoxDefinitionSearch.search(id, typeExpression, selector(project, project.projectFile).definition().distinctByName()).find()?.element
-        val obj = if (found != null) factory(found) else null
+        val obj = if (found != null) factory(DefinitionHolder(found)) else null
         cache[id] = obj
         return obj
     }
@@ -34,7 +33,7 @@ class DefinitionCache<T : Definition>(val typeExpression: String, val factory: (
         if (resolvedAll) { return this }
         resolvedAll = true
         val found = ParadoxDefinitionSearch.search(null, typeExpression, selector(project, project.projectFile).definition().distinctByName()).findAll()
-        cache.putAll(found.filter { e -> !cache.keys.contains(e.name) && e.element!=null }.associate { e -> e.name to factory(e.element!!) })
+        cache.putAll(found.filter { e -> !cache.keys.contains(e.name) && e.element!=null }.associate { e -> e.name to factory(DefinitionHolder(e.element!!)) })
 
         return this
     }

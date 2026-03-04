@@ -3,18 +3,18 @@ package com.github.ttftcuts.gigatools.main.wrappers
 import com.github.ttftcuts.gigatools.main.data.EcoModifierDomain
 import com.github.ttftcuts.gigatools.main.data.EcoModifierType
 import com.github.ttftcuts.gigatools.main.definitions.Definition
+import com.github.ttftcuts.gigatools.main.definitions.DefinitionHolder
+import com.github.ttftcuts.gigatools.main.util.PsiUtils.findProperty
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.findPropertyAndInline
-import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
-class EconomicCategory(inDef: ParadoxDefinitionElement) : Definition(inDef) {
-    val parent: EconomicCategory? by lazy {
-        var parentData = def.findPropertyAndInline("parent") ?: return@lazy null
-        if (parentData.element.value == null) return@lazy null
-        return@lazy resolve(def.project, parentData.resolver(parentData.element.value!!))
+class EconomicCategory(inDef: DefinitionHolder) : Definition(inDef) {
+    val parent: EconomicCategory? by lazy { val prop = def.findProperty("parent") ?: return@lazy null
+        if (prop.value == null) return@lazy null
+        return@lazy resolve(def.base.project, prop.value!!)
     }
 
     val children: Set<EconomicCategory> by lazy {
-        resolveAll(def.project)
+        resolveAll(def.base.project)
         cache.values.filter { e -> (e != this) && e.parent == this }.toSet()
     }
 
@@ -43,11 +43,11 @@ class EconomicCategory(inDef: ParadoxDefinitionElement) : Definition(inDef) {
 
     fun generatesModifiers(domain: EcoModifierDomain, type: EcoModifierType): Boolean {
         // find the modifier block
-        val property = def.findPropertyAndInline("generate_${type.name}_modifiers") ?: return false
+        val property = def.findProperty("generate_${type.name}_modifiers") ?: return false
         // if it's null somehow, false
-        val block = property.element.block ?: return false
+        val block = property.block ?: return false
         // find the modifier type inside it, if missing false
-        block.findPropertyAndInline(domain.name) ?: return false
+        block.findProperty(domain.name) ?: return false
         // if we got this far it means we found it
         return true
     }

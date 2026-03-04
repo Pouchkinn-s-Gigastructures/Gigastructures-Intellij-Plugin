@@ -2,6 +2,7 @@ package com.github.ttftcuts.gigatools.main.wrappers
 
 import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.definitions.Definition
+import com.github.ttftcuts.gigatools.main.definitions.DefinitionHolder
 import com.github.ttftcuts.gigatools.main.definitions.properties.IMegaFamilyProperty
 import com.github.ttftcuts.gigatools.main.definitions.properties.MegaFamilyProperty
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.findPropertyAndInline
@@ -11,24 +12,23 @@ import com.intellij.openapi.project.Project
 import icu.windea.pls.lang.psi.properties
 import icu.windea.pls.lang.psi.values
 import icu.windea.pls.script.psi.ParadoxScriptBlockElement
-import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
-class Megastructure(override val def: ParadoxDefinitionElement) : Definition(def), EconomicUnit, IMegaFamilyProperty by MegaFamilyProperty(def) {
+class Megastructure(override val def: DefinitionHolder) : Definition(def), EconomicUnit, IMegaFamilyProperty by MegaFamilyProperty(def) {
 
     val upgradeFrom : Set<Megastructure> by lazy {
-        val upgradeData = def.findPropertyAndInline("upgrade_from") ?: return@lazy setOf()
+        val upgradeData = def.base.findPropertyAndInline("upgrade_from") ?: return@lazy setOf()
         val upgradeBlock = upgradeData.element.propertyValue
         if (upgradeBlock !is ParadoxScriptBlockElement) { return@lazy setOf() }
 
         upgradeBlock.values().mapNotNull {
             v ->
             //println("in ${def.name}: $v, ${v.javaClass}");
-            resolve(def.project, upgradeData.resolver(v.value))
+            resolve(def.base.project, upgradeData.resolver(v.value))
         }.toSet()
     }
 
     val upgradeTo : Set<Megastructure> by lazy {
-        resolveAll(def.project)
+        resolveAll(def.base.project)
         cache.values.filter { e -> (e != this) && e.upgradeFrom.contains(this) }.toSet()
     }
 
@@ -36,7 +36,7 @@ class Megastructure(override val def: ParadoxDefinitionElement) : Definition(def
         val allFamilies: MutableMap<String, MutableSet<Megastructure>> = mutableMapOf()
 
         fun familyName(mega: Megastructure): String {
-            val override = MegaFamilyProperty.getFamilyOverride(mega.def)
+            val override = MegaFamilyProperty.getFamilyOverride(mega.def.base)
             if (override != null) { return override }
 
             val regex = Regex("(\\w+?)(?:_(?:permanently_ruined|ruined|\\d)\\w*)?")
@@ -136,7 +136,7 @@ class Megastructure(override val def: ParadoxDefinitionElement) : Definition(def
                 mega.addDerivedTag(buildableTag)
             }
             for (firstStage in firstStages) {
-                val potential = firstStage.def.findPropertyAndInline("potential")
+                val potential = firstStage.def.base.findPropertyAndInline("potential")
                 // if no potential block, buildable
                 if (potential == null) { tagBuildable(firstStage); continue }
 

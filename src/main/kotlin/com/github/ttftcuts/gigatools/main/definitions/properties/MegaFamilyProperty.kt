@@ -3,6 +3,7 @@ package com.github.ttftcuts.gigatools.main.definitions.properties
 import com.github.ttftcuts.gigatools.annotation.GigaToolsAttributesKeys
 import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.github.ttftcuts.gigatools.main.definitions.DefinitionHolder
+import com.github.ttftcuts.gigatools.main.definitions.HasDefinitionElement
 import com.github.ttftcuts.gigatools.main.definitions.PropertyCompanion
 import com.github.ttftcuts.gigatools.main.definitions.PropertyData
 import com.github.ttftcuts.gigatools.main.util.TextUtils
@@ -15,7 +16,7 @@ import com.intellij.util.ProcessingContext
 import icu.windea.pls.core.splitByBlank
 import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
-class MegaFamilyProperty(override val def: ParadoxDefinitionElement) : DefinitionHolder, IMegaFamilyProperty {
+class MegaFamilyProperty(override val def: DefinitionHolder) : HasDefinitionElement, IMegaFamilyProperty {
     override var megaFamily: String? = null
 
     companion object: PropertyCompanion("Family", "Override for megastructure family names. Only needed if the mega is not connected via upgrades and the name does not reduce to the same family name.") {
@@ -50,6 +51,6 @@ class MegaFamilyProperty(override val def: ParadoxDefinitionElement) : Definitio
     }
 }
 
-interface IMegaFamilyProperty : DefinitionHolder {
+interface IMegaFamilyProperty : HasDefinitionElement {
     var megaFamily: String?
 }

@@ -3,6 +3,7 @@ package com.github.ttftcuts.gigatools.main.definitions.properties
 import com.github.ttftcuts.gigatools.annotation.GigaToolsAttributesKeys
 import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.definitions.DefinitionHolder
+import com.github.ttftcuts.gigatools.main.definitions.HasDefinitionElement
 import com.github.ttftcuts.gigatools.main.definitions.PropertyCompanion
 import com.github.ttftcuts.gigatools.main.definitions.PropertyData
 import com.intellij.codeInsight.completion.CompletionParameters
@@ -15,8 +16,8 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.util.ProcessingContext
 import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
-class TagProperty(override val def: ParadoxDefinitionElement) : DefinitionHolder, ITagProperty {
-    override val tags: Map<String,DefinitionTag> by lazy { DefinitionTag.getTags(def)?.associate { tag -> tag.name to tag }?.toMap() ?: mapOf() }
+class TagProperty(override val def: DefinitionHolder) : HasDefinitionElement, ITagProperty {
+    override val tags: Map<String,DefinitionTag> by lazy { DefinitionTag.getTags(def.base)?.associate { tag -> tag.name to tag }?.toMap() ?: mapOf() }
     override val derivedTags: MutableMap<String,DefinitionTag> = mutableMapOf()
 
     override fun hasTags(vararg tagsToCheck : String, includeDerived: Boolean) : Boolean {
@@ -97,7 +98,7 @@ class TagProperty(override val def: ParadoxDefinitionElement) : DefinitionHolder
     }
 }
 
-interface ITagProperty: DefinitionHolder {
+interface ITagProperty: HasDefinitionElement {
     val tags: Map<String,DefinitionTag>
     val derivedTags: MutableMap<String,DefinitionTag>
 

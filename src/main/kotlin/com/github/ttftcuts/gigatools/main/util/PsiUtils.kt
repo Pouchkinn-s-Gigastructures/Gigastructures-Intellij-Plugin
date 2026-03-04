@@ -222,6 +222,10 @@ object PsiUtils {
         return ResolvedElement(result, doReplacement)
     }
 
+    fun ParadoxScriptMemberContainer.findProperty(prop: String, conditional: Boolean = false, inline: Boolean = false): ParadoxScriptProperty? {
+        return properties(conditional, inline).find { p -> p.name == prop }
+    }
+
     fun PsiElement.isVanilla(): Boolean {
         if (this.fileInfo == null) { return false }
         if (this.fileInfo!!.rootInfo is ParadoxRootInfo.Game) { return true }

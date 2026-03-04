@@ -6,6 +6,7 @@ import com.github.ttftcuts.gigatools.main.data.Consts
 import com.github.ttftcuts.gigatools.main.data.ToolData
 import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.github.ttftcuts.gigatools.main.definitions.DefinitionHolder
+import com.github.ttftcuts.gigatools.main.definitions.HasDefinitionElement
 import com.github.ttftcuts.gigatools.main.definitions.PropertyCompanion
 import com.github.ttftcuts.gigatools.main.definitions.PropertyData
 import com.github.ttftcuts.gigatools.main.lists.ListFormat
@@ -22,16 +23,16 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.util.ProcessingContext
 import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
-class TaggedListGeneratorProperty(override val def: ParadoxDefinitionElement): DefinitionHolder, ITaggedListGeneratorProperty {
+class TaggedListGeneratorProperty(override val def: DefinitionHolder): HasDefinitionElement, ITaggedListGeneratorProperty {
 
     override val taggedListInfo by lazy {
-        val data = Definition.getAttachedProperties(def).firstOrNull { p -> p.type == TaggedListGeneratorProperty }
+        val data = Definition.getAttachedProperties(def.base).firstOrNull { p -> p.type == TaggedListGeneratorProperty }
         if (data == null) { return@lazy null }
 
         try {
-            TaggedListInfo.parse(def.project, data.propertyText)
+            TaggedListInfo.parse(def.base.project, data.propertyText)
         } catch (e: IllegalStateException) {
-            error("${def.name}: ${e.message}")
+            error("${def.base.name}: ${e.message}")
         }
     }
 
@@ -151,7 +152,7 @@ class TaggedListGeneratorProperty(override val def: ParadoxDefinitionElement): D
     }
 }
 
-interface ITaggedListGeneratorProperty: DefinitionHolder {
+interface ITaggedListGeneratorProperty: HasDefinitionElement {
     val taggedListInfo: TaggedListInfo?
 }
 

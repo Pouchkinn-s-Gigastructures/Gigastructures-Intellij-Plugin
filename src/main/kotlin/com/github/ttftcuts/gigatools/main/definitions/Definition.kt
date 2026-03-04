@@ -18,23 +18,23 @@ import icu.windea.pls.lang.search.selector.selector
 import icu.windea.pls.script.psi.ParadoxDefinitionElement
 import icu.windea.pls.script.psi.ParadoxScriptRootBlock
 
-open class Definition(override val def: ParadoxDefinitionElement) : ITagProperty by TagProperty(def) {
+open class Definition(override val def: DefinitionHolder) : ITagProperty by TagProperty(def) {
 
     override fun toString(): String {
-        return "(${this.javaClass.simpleName}: ${def.name})"
+        return "(${this.javaClass.simpleName}: ${def.base.name})"
     }
-    fun isVanilla(): Boolean { return def.isVanilla() }
-    val name get() = def.name
-    val locName by lazy { PsiUtils.getElementName(def) }
+    fun isVanilla(): Boolean { return def.base.isVanilla() }
+    val name get() = def.base.name
+    val locName by lazy { PsiUtils.getElementName(def.base) }
 
-    val type: String get() = getDefinitionType(def)
+    val type: String get() = getDefinitionType(def.base)
 
     companion object {
 
 
         fun resolve(project: Project, type: String, id: String) : Definition? {
             val found = ParadoxDefinitionSearch.search(id,type, selector(project, project.projectFile).definition().distinctByName()).find()?.element ?: return null
-            return Definition(found)
+            return Definition(DefinitionHolder(found))
         }
 
         fun isPropertyComment(element: PsiElement): Boolean {
