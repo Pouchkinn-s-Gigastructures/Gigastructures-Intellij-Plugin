@@ -21,13 +21,13 @@ import icu.windea.pls.script.psi.ParadoxScriptRootBlock
 open class Definition(override val def: DefinitionHolder) : ITagProperty by TagProperty(def) {
 
     override fun toString(): String {
-        return "(${this.javaClass.simpleName}: ${def.base.name})"
+        return "(${this.javaClass.simpleName}: ${def.name})"
     }
-    fun isVanilla(): Boolean { return def.base.isVanilla() }
-    val name get() = def.base.name
+    fun isVanilla(): Boolean { return def.isVanilla }
+    val name get() = def.name
     val locName by lazy { PsiUtils.getElementName(def.base) }
 
-    val type: String get() = getDefinitionType(def.base)
+    val type: String get() = def.definitionType
 
     companion object {
 

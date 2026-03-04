@@ -16,19 +16,19 @@ import icu.windea.pls.script.psi.ParadoxScriptBlockElement
 class Megastructure(override val def: DefinitionHolder) : Definition(def), EconomicUnit, IMegaFamilyProperty by MegaFamilyProperty(def) {
 
     val upgradeFrom : Set<Megastructure> by lazy {
-        val upgradeData = def.base.findPropertyAndInline("upgrade_from") ?: return@lazy setOf()
-        val upgradeBlock = upgradeData.element.propertyValue
+        val upgradeData = def.findProperty("upgrade_from") ?: return@lazy setOf()
+        val upgradeBlock = upgradeData.propertyValue
         if (upgradeBlock !is ParadoxScriptBlockElement) { return@lazy setOf() }
 
         upgradeBlock.values().mapNotNull {
             v ->
             //println("in ${def.name}: $v, ${v.javaClass}");
-            resolve(def.base.project, upgradeData.resolver(v.value))
+            resolve(def.project, v.value)
         }.toSet()
     }
 
     val upgradeTo : Set<Megastructure> by lazy {
-        resolveAll(def.base.project)
+        resolveAll(def.project)
         cache.values.filter { e -> (e != this) && e.upgradeFrom.contains(this) }.toSet()
     }
 
@@ -136,12 +136,12 @@ class Megastructure(override val def: DefinitionHolder) : Definition(def), Econo
                 mega.addDerivedTag(buildableTag)
             }
             for (firstStage in firstStages) {
-                val potential = firstStage.def.base.findPropertyAndInline("potential")
+                val potential = firstStage.def.findProperty("potential")
                 // if no potential block, buildable
                 if (potential == null) { tagBuildable(firstStage); continue }
 
                 // if potential but it's busted, not buildable
-                val block = potential.element.propertyValue as? ParadoxScriptBlockElement ?: continue
+                val block = potential.propertyValue as? ParadoxScriptBlockElement ?: continue
 
                 val blockProperties = block.properties(inline = true).toList()
                 // if the potential is empty, buildable

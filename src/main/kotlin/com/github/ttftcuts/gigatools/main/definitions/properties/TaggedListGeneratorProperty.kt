@@ -30,9 +30,9 @@ class TaggedListGeneratorProperty(override val def: DefinitionHolder): HasDefini
         if (data == null) { return@lazy null }
 
         try {
-            TaggedListInfo.parse(def.base.project, data.propertyText)
+            TaggedListInfo.parse(def.project, data.propertyText)
         } catch (e: IllegalStateException) {
-            error("${def.base.name}: ${e.message}")
+            error("${def.name}: ${e.message}")
         }
     }
 

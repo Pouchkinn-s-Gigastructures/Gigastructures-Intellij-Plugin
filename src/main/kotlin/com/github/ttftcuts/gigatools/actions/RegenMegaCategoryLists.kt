@@ -64,15 +64,13 @@ class RegenMegaCategoryLists : DumbAwareAction() {
             ScriptedTrigger.regenerateCache(project)
             ScriptedEffect.regenerateCache(project)
 
-            val testMega = Megastructure.get("dyson_sphere_2_a_star")!!
+            //val testMega = Megastructure.get("dyson_sphere_2_a_star")!!
+            //println(testMega.def.findProperty("upgrade_from", fromBase = true)?.text)
+            //println(testMega.def.findProperty("upgrade_from")?.text)
 
-            println(testMega.def.base.properties(inline = true).find { p->p.name == "upgrade_from" }?.text)
-
-            println(testMega.def.inlined.properties().find { p->p.name == "upgrade_from" }?.text)
-
-            //regenMegaFamilies(project)
-            //regenCategories(project)
-            //regenTaggedLists(project)
+            regenMegaFamilies(project)
+            regenCategories(project)
+            regenTaggedLists(project)
         }
 
         showMessage("Trigger Rebuild Complete")
@@ -237,7 +235,7 @@ class RegenMegaCategoryLists : DumbAwareAction() {
         // go through each one
         for (tList in tagged) {
             // skip malformed blocks
-            if (tList.def.base.block == null) { continue }
+            if (tList.def.inlined.block == null) { continue }
             // we know the list info is non-null due to the filtered lists above
             val info = tList.taggedListInfo!!
             // make sure the list's definition type is available
@@ -246,7 +244,7 @@ class RegenMegaCategoryLists : DumbAwareAction() {
             // get all entries of the matching type which have matching tags and generate a list with the given template
             val generated = ListBuilders.buildListTextWithFormat(allEntries
                 .filter { def -> info.tagEvaluator.evaluate(def) }
-                .map { def -> def.def.base },
+                .map { def -> def.def.inlined },
                 info.template, info.parameters)
             // apply new block contents
             ListBuilders.replaceBlockContents(project, tList.def.base.block!!, generated)

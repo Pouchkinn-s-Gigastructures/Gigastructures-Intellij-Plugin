@@ -1,5 +1,6 @@
 package com.github.ttftcuts.gigatools.main.definitions
 
+import com.github.ttftcuts.gigatools.main.util.PsiUtils.isVanilla
 import icu.windea.pls.core.collections.process
 import icu.windea.pls.ep.resolve.ParadoxInlineScriptInlineSupport
 import icu.windea.pls.lang.fileInfo
@@ -14,6 +15,11 @@ interface HasDefinitionElement {
 }
 
 class DefinitionHolder(val base: ParadoxDefinitionElement) {
+    val project get() = base.project
+    val name get() = base.name
+    val isVanilla get() = base.isVanilla()
+    val definitionType get() = Definition.getDefinitionType(base)
+
     private val resolve by lazy {
         val parameterStack = mutableListOf<MutableMap<String,MutableList<String>>>()
         var parameterFile = base.containingFile.fileInfo?.path
@@ -100,4 +106,6 @@ class DefinitionHolder(val base: ParadoxDefinitionElement) {
     fun findProperty(property: String, fromBase: Boolean = false): ParadoxScriptProperty? {
         return (if(fromBase) { base.properties(inline = true) } else { inlined.properties() }).find { p -> p.name == property }
     }
+
+    fun getAttachedProperties() = Definition.getAttachedProperties(base)
 }

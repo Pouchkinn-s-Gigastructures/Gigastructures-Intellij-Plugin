@@ -10,11 +10,11 @@ import com.github.ttftcuts.gigatools.main.util.PsiUtils.findPropertyAndInline
 class EconomicCategory(inDef: DefinitionHolder) : Definition(inDef) {
     val parent: EconomicCategory? by lazy { val prop = def.findProperty("parent") ?: return@lazy null
         if (prop.value == null) return@lazy null
-        return@lazy resolve(def.base.project, prop.value!!)
+        return@lazy resolve(def.project, prop.value!!)
     }
 
     val children: Set<EconomicCategory> by lazy {
-        resolveAll(def.base.project)
+        resolveAll(def.project)
         cache.values.filter { e -> (e != this) && e.parent == this }.toSet()
     }
 
