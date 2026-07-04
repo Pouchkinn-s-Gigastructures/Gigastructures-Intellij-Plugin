@@ -7,6 +7,6 @@ import com.intellij.openapi.startup.ProjectActivity
 class GigaToolsInit : ProjectActivity {
 
     override suspend fun execute(project: Project) {
-        ToolData.loadDataFile(project)
+        ToolData.loadDataFile(project, initialLoad = true) // suppress file not found on first load
     }
 }

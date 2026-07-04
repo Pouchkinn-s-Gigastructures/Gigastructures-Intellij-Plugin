@@ -1,6 +1,7 @@
 package com.github.ttftcuts.gigatools.annotation
 
 import com.github.ttftcuts.gigatools.main.data.ToolData
+import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionParameters
@@ -12,7 +13,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiComment
 import com.intellij.util.ProcessingContext
 import icu.windea.pls.lang.*
-import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
+import icu.windea.pls.script.psi.ParadoxDefinitionElement
 
 class DefinitionPropertyCompletionContributor : CompletionContributor() {
     init {
@@ -23,21 +24,21 @@ class DefinitionPropertyCompletionContributor : CompletionContributor() {
                     // get the comment element
                     val comment = parameters.position
 
-                    // find the next element and check that it's a definition
-                    val nextElement = PsiUtils.nextNonWhiteSpaceSibling(comment)
-                    if (nextElement !is ParadoxScriptDefinitionElement) { return }
-                    // get the valid tags for the definition's type
-                    val elementType = nextElement.definitionInfo?.typeConfig?.name ?: "unknown"
-                    val validTags = ToolData.definitionTags[elementType] ?: return
+                    // check that we're a property comment and get data
+                    val data = Definition.getPropertyData(comment) ?: return
 
-                    // add all valid tags to the list, along with their descriptions
-                    resultSet.addAllElements(validTags.keys.map { s -> LookupElementBuilder.create(s).withTypeText( validTags[s]?.shortDesc ) })
+                    data.type.addCompletions(data, parameters, context, resultSet)
+
+//                    // find the next element and check that it's a definition
+//                    val nextElement = PsiUtils.nextNonWhiteSpaceSibling(comment)
+//                    if (nextElement !is ParadoxDefinitionElement) { return }
+//                    // get the valid tags for the definition's type
+//                    val elementType = nextElement.definitionInfo?.typeConfig?.name ?: "unknown"
+//                    val validTags = ToolData.definitionTags[elementType] ?: return
+//
+//                    // add all valid tags to the list, along with their descriptions
+//                    resultSet.addAllElements(validTags.keys.map { s -> LookupElementBuilder.create(s).withTypeText( validTags[s]?.shortDesc ) })
                 }
             })
     }
-
-//    fun register(disposable: Disposable) {
-//        val languageExtension = CompletionContributor::class.java.getStaticField<LanguageExtension<CompletionContributor>>("INSTANCE")
-//        languageExtension.addExplicitExtension(ParadoxScriptLanguage, this, disposable)
-//    }
 }

@@ -2,21 +2,20 @@ package com.github.ttftcuts.gigatools.main.wrappers
 
 import com.github.ttftcuts.gigatools.main.data.EcoModifierDomain
 import com.github.ttftcuts.gigatools.main.data.EcoModifierType
-import com.github.ttftcuts.gigatools.main.tagging.TaggedDefinition
+import com.github.ttftcuts.gigatools.main.definitions.Definition
+import com.github.ttftcuts.gigatools.main.definitions.DefinitionHolder
+import com.github.ttftcuts.gigatools.main.util.PsiUtils.findProperty
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.findPropertyAndInline
-import icu.windea.pls.script.psi.ParadoxScriptDefinitionElement
 
-class EconomicCategory(def: ParadoxScriptDefinitionElement) : TaggedDefinition(def) {
-    val parent: EconomicCategory? by lazy {
-        var parentData = def.findPropertyAndInline("parent") ?: return@lazy null
-        val resolver = parentData.second ?: { e: String -> e }
-        if (parentData.first?.value == null) return@lazy null
-        return@lazy resolve(def.project, resolver(parentData.first!!.value!!))
+class EconomicCategory(inDef: DefinitionHolder) : Definition(inDef) {
+    val parent: EconomicCategory? by lazy { val prop = def.findProperty("parent") ?: return@lazy null
+        if (prop.value == null) return@lazy null
+        return@lazy resolve(def.project, prop.value!!)
     }
 
     val children: Set<EconomicCategory> by lazy {
         resolveAll(def.project)
-        cache.values.filterNotNull().filter { e -> (e != this) && e.parent == this }.toSet()
+        cache.values.filter { e -> (e != this) && e.parent == this }.toSet()
     }
 
     val generatesAnyModifiers: Boolean by lazy {
@@ -44,11 +43,11 @@ class EconomicCategory(def: ParadoxScriptDefinitionElement) : TaggedDefinition(d
 
     fun generatesModifiers(domain: EcoModifierDomain, type: EcoModifierType): Boolean {
         // find the modifier block
-        val property = def.findPropertyAndInline("generate_${type.name}_modifiers") ?: return false
+        val property = def.findProperty("generate_${type.name}_modifiers") ?: return false
         // if it's null somehow, false
-        val block = property.first?.block ?: return false
+        val block = property.block ?: return false
         // find the modifier type inside it, if missing false
-        block.findPropertyAndInline(domain.name) ?: return false
+        block.findProperty(domain.name) ?: return false
         // if we got this far it means we found it
         return true
     }
