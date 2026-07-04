@@ -7,3 +7,4 @@
 build
 *.jar
 idea-flex.skeleton
+*.hprof
