@@ -1,0 +1,23 @@
+{
+    parserClass = "com.github.ttftcuts.gigatools.language.TagLangParser"
+    extends = "com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+    psiClassPrefix = "TagLang"
+    psiImplClassSuffix = "Impl"
+    psiPackage = "com.github.ttftcuts.gigatools.language.psi"
+    psiImplPackage = "com.github.ttftcuts.gigatools.language.psi.impl"
+
+    elementTypeHolderClass = "com.github.ttftcuts.gigatools.language.psi.TagLangTypes"
+    elementTypeClass = "com.github.ttftcuts.gigatools.language.psi.TagElementType"
+    tokenTypeClass = "com.github.ttftcuts.gigatools.language.psi.TagTokenType"
+}
+
+tagFile ::= expression
+
+expression ::= or_expression
+
+or_expression ::= and_expression (OR_OP and_expression)*
+and_expression ::= unary_expression (AND_OP unary_expression)*
+unary_expression ::= NOT_OP unary_expression | primary_expression
+primary_expression ::= tag_expression | L_PAREN expression R_PAREN
+tag_expression ::= TAG

@@ -1,20 +1,34 @@
 package com.github.ttftcuts.gigatools.main.util
 
+import com.github.ttftcuts.gigatools.language.TagLangFile
+import com.github.ttftcuts.gigatools.language.TagLanguage
+import com.github.ttftcuts.gigatools.language.psi.TagLangExpression
+import com.github.ttftcuts.gigatools.main.definitions.Definition
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.search.PsiSearchHelper
+import icu.windea.pls.core.castOrNull
 import icu.windea.pls.core.collections.process
-import icu.windea.pls.ep.resolve.ParadoxInlineSupport
+import icu.windea.pls.core.findChild
+import icu.windea.pls.core.toPsiFile
+import icu.windea.pls.ep.resolve.ParadoxInlineScriptInlineSupport
 import icu.windea.pls.lang.fileInfo
+import icu.windea.pls.lang.psi.properties
+import icu.windea.pls.lang.search.ParadoxFilePathSearch
 import icu.windea.pls.lang.search.ParadoxLocalisationSearch
-import icu.windea.pls.lang.search.selector.*
+import icu.windea.pls.lang.search.util.*
 import icu.windea.pls.lang.util.ParadoxLocaleManager
-import icu.windea.pls.lang.util.dataFlow.*
-import icu.windea.pls.lang.util.renderers.ParadoxLocalisationTextRenderer
+import icu.windea.pls.lang.util.renderers.ParadoxLocalisationTextPlainRenderer
+import icu.windea.pls.localisation.psi.ParadoxLocalisationElementFactory
+import icu.windea.pls.localisation.psi.ParadoxLocalisationFile
+import icu.windea.pls.localisation.psi.ParadoxLocalisationPropertyList
+import icu.windea.pls.model.ParadoxLocalisationType
 import icu.windea.pls.model.ParadoxRootInfo
 import icu.windea.pls.script.ParadoxScriptLanguage
 import icu.windea.pls.script.psi.*
@@ -49,11 +63,58 @@ object PsiUtils {
         return null
     }
 
-    fun getElementName(element: ParadoxScriptDefinitionElement) : String {
+    fun nextNonWhiteSpaceSiblingLine(element: PsiElement): PsiElement? {
+        var nextElement: PsiElement? = element.nextSibling ?: element.parent.nextSibling
+
+        while (nextElement != null) {
+            if (nextElement is ParadoxScriptRootBlock) {
+                nextElement = nextElement.firstChild
+            } else if (nextElement !is PsiWhiteSpace) {
+                return nextElement
+            } else if (nextElement.text.count { c -> c == '\n' } == 1){
+                nextElement = nextElement.nextSibling
+            } else {
+                return null
+            }
+        }
+        return null
+    }
+
+    fun prevNonWhiteSpaceSiblingLine(element: PsiElement): PsiElement? {
+        var prevElement: PsiElement? = element.prevSibling ?: element.parent.prevSibling
+
+        while (prevElement != null) {
+            if (prevElement !is PsiWhiteSpace) {
+                return prevElement
+            } else if (prevElement.text.count { c -> c == '\n' } == 1) {
+                prevElement = prevElement.prevSibling
+            } else {
+                return null
+            }
+        }
+        return null
+    }
+
+    fun findAssociatedDefinition(element: PsiElement): ParadoxDefinitionElement? {
+        var nextElement: PsiElement? = nextNonWhiteSpaceSiblingLine(element)
+
+        while (nextElement != null) {
+            if (Definition.isPropertyComment(nextElement)) {
+                nextElement = nextNonWhiteSpaceSiblingLine(nextElement)
+            } else if (nextElement is ParadoxDefinitionElement) {
+                return nextElement
+            } else {
+                return null
+            }
+        }
+        return null
+    }
+
+    fun getElementName(element: ParadoxDefinitionElement) : String {
         val locale = ParadoxLocaleManager.getLocaleConfig("l_english") // english for standardisation
-        val selector = selector(element.project, element).localisation().contextSensitive().preferLocale(locale)
-        val loc = ParadoxLocalisationSearch.search(element.name, selector).find() ?: return element.name
-        val rendered = ParadoxLocalisationTextRenderer().render(loc).replace("\u200B", "")
+        val selector = ParadoxLocalisationSearch.selector(element.project, element).contextSensitive().preferLocale(locale)
+        val loc = ParadoxLocalisationSearch.search(element.name, ParadoxLocalisationType.Normal, selector).find() ?: return element.name
+        val rendered = ParadoxLocalisationTextPlainRenderer().render(loc).replace("\u200B", "")
         return rendered.ifEmpty { loc.value ?: element.name }
     }
 
@@ -68,15 +129,18 @@ object PsiUtils {
 
     //val parameterSupport by lazy { ParadoxDefinitionParameterSupport() }
 
+    val DEFAULT_RESOLVER = { e: String -> e }
+    class ResolvedElement(val element: ParadoxScriptProperty, val resolver: ((String) -> String))
+
     fun PsiElement.findPropertyAndInline(
         propertyName: String? = null,
         ignoreCase: Boolean = true,
         conditional: Boolean = false,
-    ): Pair<ParadoxScriptProperty?,((String) ->String)?>? {
+    ): ResolvedElement? {
         if (language != ParadoxScriptLanguage) return null
-        if (propertyName != null && propertyName.isEmpty()) return this as? ParadoxScriptProperty to null
+        if (propertyName != null && propertyName.isEmpty()) return ResolvedElement(this as ParadoxScriptProperty, DEFAULT_RESOLVER)
         val block = when {
-            this is ParadoxScriptDefinitionElement -> this.block
+            this is ParadoxDefinitionElement -> this.block
             this is ParadoxScriptBlock -> this
             else -> null
         }
@@ -101,14 +165,13 @@ object PsiUtils {
 
         //println("start process")
 
-        //block?.processProperty(conditional, true) {
-        block?.properties()?.options(conditional = conditional, inline = true)?.process {
+        block?.properties(conditional, true)?.process {
             //println("visited: ${it.name}, ${it.javaClass}")
             // if the current file isn't the parameter file, pop the stack
             //println("file: ${it.fileInfo?.path} - parameterFile: $parameterFile - name: ${it.name}")
             if (it.fileInfo != null && it.fileInfo!!.path != parameterFile) {
-                println(it.fileInfo!!.path)
-                println(parameterFile)
+                //println(it.fileInfo!!.path)
+                //println(parameterFile)
                 parameterFile = it.fileInfo!!.path
                 parameterStack.removeLast()
                 //println("POP!")
@@ -116,7 +179,7 @@ object PsiUtils {
             // if the element appears to be an inline script
             if (it.name.equals("inline_script", true) && it.fileInfo != null) {
                 // get the element for it to get the file name
-                val inlineElement = ParadoxInlineSupport.getInlinedElement(it)
+                val inlineElement = ParadoxInlineScriptInlineSupport().getInlinedElement(it)
 
                 if (inlineElement != null && inlineElement.containingFile.fileInfo != null) {
                     val inlineFilePath = inlineElement.containingFile.fileInfo!!.path
@@ -130,7 +193,7 @@ object PsiUtils {
                         //println(inlineBlock.propertyList)
 
                         //val replaceParameters = parameterStack.last()
-                        for (property in inlineBlock.propertyList) {
+                        for (property in inlineBlock.properties()) {
                             // read in parameters
                             if (property.name != "script") {
                                 val name = doReplacement(property.name)
@@ -154,13 +217,49 @@ object PsiUtils {
                 true
             }
         }
-        if (parameterStack.isEmpty()) { return result to null }
-        return result to doReplacement
+        if (result == null) { return null }
+        if (parameterStack.isEmpty()) { return ResolvedElement(result, DEFAULT_RESOLVER) }
+        return ResolvedElement(result, doReplacement)
+    }
+
+    fun ParadoxScriptMemberContainer.findProperty(prop: String, conditional: Boolean = false, inline: Boolean = false): ParadoxScriptProperty? {
+        return properties(conditional, inline).find { p -> p.name == prop }
     }
 
     fun PsiElement.isVanilla(): Boolean {
         if (this.fileInfo == null) { return false }
         if (this.fileInfo!!.rootInfo is ParadoxRootInfo.Game) { return true }
         return false
+    }
+
+    fun ParadoxScriptFile.replaceContents(newContents: String) {
+        val replacement = ParadoxScriptElementFactory.createFileFromText(project, newContents).findChild<ParadoxScriptRootBlock>()
+        if (replacement != null) {
+            this.deleteChildRange(this.children.first(), this.children.last())
+            this.add(replacement)
+        } else {
+            error("Script file contents replace failed")
+        }
+    }
+
+    fun ParadoxLocalisationFile.replaceContents(newContents: String) {
+        val replacement = ParadoxLocalisationElementFactory.createFileFromText(project, newContents).findChild<ParadoxLocalisationPropertyList>()
+        if (replacement != null) {
+            this.deleteChildRange(this.children.first(), this.children.last())
+            this.add(replacement)
+        } else {
+            error("Loc file contents replace failed")
+        }
+    }
+
+    inline fun <reified T: PsiFile>resolveFile(project: Project, path: String): T {
+        val file = ParadoxFilePathSearch.search(path, null, ParadoxFilePathSearch.selector(project, project.projectFile)).findFirst() ?: error("PsiUtils.ResolveFile: Unable to find file: $path")
+        val psiFile = file.toPsiFile(project) ?: error("PsiUtils.ResolveFile: Unable to find PsiFile: $path")
+        val typedFile = psiFile.castOrNull<T>() ?: error("PsiUtils.ResolveFile: File $path is not a the expected type")
+        return typedFile
+    }
+
+    fun parseTagLang(project: Project, input: String): TagLangExpression? {
+        return PsiFileFactory.getInstance(project).createFileFromText(TagLanguage, input).castOrNull<TagLangFile>()?.firstChild.castOrNull<TagLangExpression>()
     }
 }

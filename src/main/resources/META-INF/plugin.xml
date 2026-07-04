@@ -17,6 +17,17 @@
         <completion.contributor language="PARADOX_SCRIPT" implementationClass="com.github.ttftcuts.gigatools.annotation.DefinitionPropertyCompletionContributor" />
 
         <notificationGroup displayType="BALLOON" id="GigaTools"/>
+
+        <fileType
+                name="GigaTools Tag"
+                implementationClass="com.github.ttftcuts.gigatools.language.TagLangFileType"
+                fieldName="INSTANCE"
+                language="GigaTag"
+                extensions="gigatag"
+        />
+        <lang.parserDefinition language="GigaTag" implementationClass="com.github.ttftcuts.gigatools.language.TagLangParserDefinition" />
+        <multiHostInjector implementation="com.github.ttftcuts.gigatools.language.TagLangInjector" />
+        <lang.syntaxHighlighterFactory language="GigaTag" implementationClass="com.github.ttftcuts.gigatools.language.TagLangSyntaxHighlighterFactory" />
     </extensions>
 
     <actions>
