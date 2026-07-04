@@ -15,8 +15,7 @@ import icu.windea.pls.core.findChild
 import icu.windea.pls.core.toPsiFile
 import icu.windea.pls.lang.search.ParadoxFilePathSearch
 import icu.windea.pls.lang.search.ParadoxLocalisationSearch
-import icu.windea.pls.lang.search.selector.locale
-import icu.windea.pls.lang.search.selector.selector
+import icu.windea.pls.lang.search.util.locale
 import icu.windea.pls.lang.util.ParadoxLocaleManager
 import icu.windea.pls.localisation.psi.ParadoxLocalisationElementFactory
 import icu.windea.pls.localisation.psi.ParadoxLocalisationFile
@@ -35,7 +34,7 @@ class RegenJobEcoLoc : DumbAwareAction() {
         val project = e.project ?: return
 
         // get the file
-        val file = ParadoxFilePathSearch.search(FILE_PATH, null, selector(project, project.projectFile).file()).findFirst() ?: return
+        val file = ParadoxFilePathSearch.search(FILE_PATH, null, ParadoxFilePathSearch.selector(project, project.projectFile)).findFirst() ?: return
         val psiFile = file.toPsiFile(project) ?: return
         val locFile = psiFile.castOrNull<ParadoxLocalisationFile>() ?: return
 
@@ -76,8 +75,8 @@ class RegenJobEcoLoc : DumbAwareAction() {
                 if (!test) {
                     return
                 }
-                val element = ParadoxLocalisationSearch.search(key, ParadoxLocalisationType.Normal, selector(project, project.projectFile)
-                    .localisation().locale(locale)).find()
+                val element = ParadoxLocalisationSearch.search(key, ParadoxLocalisationType.Normal, ParadoxLocalisationSearch.selector(project, project.projectFile)
+                    .locale(locale)).find()
 
                 if (element == null || !element.isVanilla()) {
                     builder.appendLine(" $key:0 \"$value\"")
@@ -156,7 +155,7 @@ class RegenJobEcoLoc : DumbAwareAction() {
                 }
             }
 
-            val replacement = ParadoxLocalisationElementFactory.createDummyFile(project, builder.toString()).findChild<ParadoxLocalisationPropertyList>()
+            val replacement = ParadoxLocalisationElementFactory.createFileFromText(project, builder.toString()).findChild<ParadoxLocalisationPropertyList>()
             if (replacement != null) {
                 locFile.deleteChildRange(locFile.children.first(), locFile.children.last())
                 locFile.add(replacement)

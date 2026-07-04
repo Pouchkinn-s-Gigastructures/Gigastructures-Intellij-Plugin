@@ -3,7 +3,6 @@ package com.github.ttftcuts.gigatools.main.lists
 import com.github.ttftcuts.gigatools.main.definitions.properties.DefinitionTag
 import icu.windea.pls.lang.psi.properties
 import icu.windea.pls.lang.search.ParadoxDefinitionSearch
-import icu.windea.pls.lang.search.selector.*
 import icu.windea.pls.script.psi.*
 
 object GigaListConditions {
@@ -41,7 +40,7 @@ object GigaListConditions {
             //builder.appendLine("# ${mega.name}: no category given")
             return false
         }
-        val category = ParadoxDefinitionSearch.search(elementCategoryName, "economic_category", selector(element.project, element.project.projectFile).definition().distinctByName()).find()?.element
+        val category = ParadoxDefinitionSearch.search(elementCategoryName, "economic_category", ParadoxDefinitionSearch.selector(element.project, element.project.projectFile).distinct()).find()?.element
         if (category == null) {
             //builder.appendLine("# ${mega.name}: category has no value")
             return false
@@ -57,7 +56,7 @@ object GigaListConditions {
         return matches
     }
     fun hasEcoCategoryByName(element : ParadoxDefinitionElement, categoryToCheck: String) : Boolean {
-        val wantedCategory = ParadoxDefinitionSearch.search(categoryToCheck,"economic_category", selector(element.project, element.project.projectFile).definition().distinctByName()).find()?.element
+        val wantedCategory = ParadoxDefinitionSearch.search(categoryToCheck,"economic_category", ParadoxDefinitionSearch.selector(element.project, element.project.projectFile).distinct()).find()?.element
         if (wantedCategory == null) {
             //show("Failed to find economic category: $categoryName")
             return false
@@ -82,7 +81,7 @@ object GigaListConditions {
             return false
         }
 
-        val selector = selector(categoryToCheck.project, categoryToCheck.context).definition().distinctByName()
+        val selector = ParadoxDefinitionSearch.selector(categoryToCheck.project, categoryToCheck.context).distinct()
         val parentCategory = ParadoxDefinitionSearch.search(parent.value!!,"economic_category", selector).find()?.element
 
         if (parentCategory != null) { return checkEcoCategoryWithLineage(parentCategory, categoryToMatch, map) }

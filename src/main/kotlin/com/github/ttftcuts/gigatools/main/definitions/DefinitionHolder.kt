@@ -94,7 +94,7 @@ class DefinitionHolder(val base: ParadoxDefinitionElement) {
 
         // build resolved definition
         val resolvedText = doReplacement(builder.toString())
-        val resolvedDef = ParadoxScriptElementFactory.createDummyFile(base.project, resolvedText).firstChild.firstChild as ParadoxDefinitionElement
+        val resolvedDef = ParadoxScriptElementFactory.createFileFromText(base.project, resolvedText).firstChild.firstChild as ParadoxDefinitionElement
 
         // aaaand return both values
         doReplacement to resolvedDef

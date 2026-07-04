@@ -2,8 +2,6 @@ package com.github.ttftcuts.gigatools.main.definitions
 
 import com.intellij.openapi.project.Project
 import icu.windea.pls.lang.search.ParadoxDefinitionSearch
-import icu.windea.pls.lang.search.selector.distinctByName
-import icu.windea.pls.lang.search.selector.selector
 
 class DefinitionCache<T : Definition>(val typeExpression: String, val factory: (DefinitionHolder) -> T ) {
     private var resolvedAll = false
@@ -23,7 +21,7 @@ class DefinitionCache<T : Definition>(val typeExpression: String, val factory: (
 
     fun resolve(project: Project, id: String) : T? {
         if (cache.containsKey(id)) { return cache[id] }
-        val found = ParadoxDefinitionSearch.search(id, typeExpression, selector(project, project.projectFile).definition().distinctByName()).find()?.element
+        val found = ParadoxDefinitionSearch.search(id, typeExpression, ParadoxDefinitionSearch.selector(project, project.projectFile).distinct()).find()?.element
         val obj = if (found != null) factory(DefinitionHolder(found)) else null
         cache[id] = obj
         return obj
@@ -32,7 +30,7 @@ class DefinitionCache<T : Definition>(val typeExpression: String, val factory: (
     fun resolveAll(project: Project) : DefinitionCache<T> {
         if (resolvedAll) { return this }
         resolvedAll = true
-        val found = ParadoxDefinitionSearch.search(null, typeExpression, selector(project, project.projectFile).definition().distinctByName()).findAll()
+        val found = ParadoxDefinitionSearch.search(null, typeExpression, ParadoxDefinitionSearch.selector(project, project.projectFile).distinct()).findAll()
         cache.putAll(found.filter { e -> !cache.keys.contains(e.name) && e.element!=null }.associate { e -> e.name to factory(DefinitionHolder(e.element!!)) })
 
         return this

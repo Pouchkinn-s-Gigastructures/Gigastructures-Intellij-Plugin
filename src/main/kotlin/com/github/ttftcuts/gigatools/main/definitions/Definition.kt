@@ -6,15 +6,12 @@ import com.github.ttftcuts.gigatools.main.data.Consts.Property.PREFIX
 import com.github.ttftcuts.gigatools.main.definitions.properties.ITagProperty
 import com.github.ttftcuts.gigatools.main.definitions.properties.TagProperty
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
-import com.github.ttftcuts.gigatools.main.util.PsiUtils.isVanilla
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.findTopmostParentOfType
 import icu.windea.pls.lang.definitionInfo
 import icu.windea.pls.lang.search.ParadoxDefinitionSearch
-import icu.windea.pls.lang.search.selector.distinctByName
-import icu.windea.pls.lang.search.selector.selector
 import icu.windea.pls.script.psi.ParadoxDefinitionElement
 import icu.windea.pls.script.psi.ParadoxScriptRootBlock
 
@@ -33,7 +30,7 @@ open class Definition(override val def: DefinitionHolder) : ITagProperty by TagP
 
 
         fun resolve(project: Project, type: String, id: String) : Definition? {
-            val found = ParadoxDefinitionSearch.search(id,type, selector(project, project.projectFile).definition().distinctByName()).find()?.element ?: return null
+            val found = ParadoxDefinitionSearch.search(id,type, ParadoxDefinitionSearch.selector(project, project.projectFile).distinct()).find()?.element ?: return null
             return Definition(DefinitionHolder(found))
         }
 

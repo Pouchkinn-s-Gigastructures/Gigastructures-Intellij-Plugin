@@ -5,9 +5,7 @@ import com.github.ttftcuts.gigatools.main.util.EditorUtils.showMessage
 import com.github.ttftcuts.gigatools.main.util.PsiUtils
 import com.intellij.openapi.project.Project
 import icu.windea.pls.lang.search.ParadoxDefinitionSearch
-import icu.windea.pls.lang.search.selector.distinctByName
-import icu.windea.pls.lang.search.selector.filterBy
-import icu.windea.pls.lang.search.selector.selector
+import icu.windea.pls.lang.search.util.filterBy
 import icu.windea.pls.model.index.ParadoxDefinitionIndexInfo
 import icu.windea.pls.script.psi.ParadoxDefinitionElement
 import icu.windea.pls.script.psi.ParadoxScriptBlockElement
@@ -17,14 +15,14 @@ object ListBuilders {
     // rewrite the body of a specified scripted trigger with a list of megas which have the matching economic category or a child thereof
     fun buildMegaCategoryList(project: Project, triggerName: String, predicate: (ParadoxDefinitionIndexInfo) -> Boolean ) {
         // find the trigger that we're going to rewrite
-        val trigger = ParadoxDefinitionSearch.search(triggerName,"scripted_trigger", selector(project, project.projectFile).definition().distinctByName()).find()?.element
+        val trigger = ParadoxDefinitionSearch.search(triggerName,"scripted_trigger", ParadoxDefinitionSearch.selector(project, project.projectFile).distinct()).find()?.element
         if (trigger == null) {
             showMessage("Failed to find scripted trigger: $triggerName")
             return
         }
 
         // get a list of matching megas
-        val megas: Iterable<ParadoxDefinitionElement> = ParadoxDefinitionSearch.search(null, "megastructure", selector(project, project.projectFile).definition().distinctByName().filterBy(predicate)).findAll().mapNotNull { d -> d.element }.sortedBy { mega -> mega.name }
+        val megas: Iterable<ParadoxDefinitionElement> = ParadoxDefinitionSearch.search(null, "megastructure", ParadoxDefinitionSearch.selector(project, project.projectFile).distinct().filterBy(predicate)).findAll().mapNotNull { d -> d.element }.sortedBy { mega -> mega.name }
 
         val content = buildListTextWithFormat(megas, ToolData.listFormats["scripted_trigger"]!!, mapOf("trigger" to "\$CONDITION\$"))
 

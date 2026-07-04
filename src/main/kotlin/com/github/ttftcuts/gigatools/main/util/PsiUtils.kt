@@ -22,7 +22,7 @@ import icu.windea.pls.lang.fileInfo
 import icu.windea.pls.lang.psi.properties
 import icu.windea.pls.lang.search.ParadoxFilePathSearch
 import icu.windea.pls.lang.search.ParadoxLocalisationSearch
-import icu.windea.pls.lang.search.selector.*
+import icu.windea.pls.lang.search.util.*
 import icu.windea.pls.lang.util.ParadoxLocaleManager
 import icu.windea.pls.lang.util.renderers.ParadoxLocalisationTextPlainRenderer
 import icu.windea.pls.localisation.psi.ParadoxLocalisationElementFactory
@@ -112,7 +112,7 @@ object PsiUtils {
 
     fun getElementName(element: ParadoxDefinitionElement) : String {
         val locale = ParadoxLocaleManager.getLocaleConfig("l_english") // english for standardisation
-        val selector = selector(element.project, element).localisation().contextSensitive().preferLocale(locale)
+        val selector = ParadoxLocalisationSearch.selector(element.project, element).contextSensitive().preferLocale(locale)
         val loc = ParadoxLocalisationSearch.search(element.name, ParadoxLocalisationType.Normal, selector).find() ?: return element.name
         val rendered = ParadoxLocalisationTextPlainRenderer().render(loc).replace("\u200B", "")
         return rendered.ifEmpty { loc.value ?: element.name }
@@ -233,7 +233,7 @@ object PsiUtils {
     }
 
     fun ParadoxScriptFile.replaceContents(newContents: String) {
-        val replacement = ParadoxScriptElementFactory.createDummyFile(project, newContents).findChild<ParadoxScriptRootBlock>()
+        val replacement = ParadoxScriptElementFactory.createFileFromText(project, newContents).findChild<ParadoxScriptRootBlock>()
         if (replacement != null) {
             this.deleteChildRange(this.children.first(), this.children.last())
             this.add(replacement)
@@ -243,7 +243,7 @@ object PsiUtils {
     }
 
     fun ParadoxLocalisationFile.replaceContents(newContents: String) {
-        val replacement = ParadoxLocalisationElementFactory.createDummyFile(project, newContents).findChild<ParadoxLocalisationPropertyList>()
+        val replacement = ParadoxLocalisationElementFactory.createFileFromText(project, newContents).findChild<ParadoxLocalisationPropertyList>()
         if (replacement != null) {
             this.deleteChildRange(this.children.first(), this.children.last())
             this.add(replacement)
@@ -253,7 +253,7 @@ object PsiUtils {
     }
 
     inline fun <reified T: PsiFile>resolveFile(project: Project, path: String): T {
-        val file = ParadoxFilePathSearch.search(path, null, selector(project, project.projectFile).file()).findFirst() ?: error("PsiUtils.ResolveFile: Unable to find file: $path")
+        val file = ParadoxFilePathSearch.search(path, null, ParadoxFilePathSearch.selector(project, project.projectFile)).findFirst() ?: error("PsiUtils.ResolveFile: Unable to find file: $path")
         val psiFile = file.toPsiFile(project) ?: error("PsiUtils.ResolveFile: Unable to find PsiFile: $path")
         val typedFile = psiFile.castOrNull<T>() ?: error("PsiUtils.ResolveFile: File $path is not a the expected type")
         return typedFile
