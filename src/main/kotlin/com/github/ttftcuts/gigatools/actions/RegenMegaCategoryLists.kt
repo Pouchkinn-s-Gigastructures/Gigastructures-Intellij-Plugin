@@ -25,6 +25,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import icu.windea.pls.core.property
 import icu.windea.pls.lang.psi.properties
 import icu.windea.pls.script.psi.ParadoxScriptFile
 
@@ -46,11 +47,14 @@ class RegenMegaCategoryLists : DumbAwareAction() {
         //val results = GigaPsiUtils.findCommentsWithPrefix(project, PREFIX)
         //println(results)
 
-        //val test = Megastructure.resolve(project, "matrioshka_brain_2_g_star")!!
-        //val results = test.def.findPropertyAndInline("upgrade_from", inline = true)
-        //println("RESULT:")
-        //println(results)
-        //println(test.upgradeFrom)
+
+//        Megastructure.clearCache()
+//        val test = Megastructure.resolve(project, "matrioshka_brain_3_b_star")!!
+//        val results = test.def.findProperty("upgrade_from")
+//        println(test.def.inlined.text)
+//        println("RESULT:")
+//        println(results)
+//        println(test.def.findProperty("potential")?.text)
 
         //val results = test.def.findPropertyTest("upgrade_from", inline = true)
 
