@@ -8,7 +8,7 @@ import icu.windea.pls.lang.search.ParadoxDefinitionSearch
 import icu.windea.pls.lang.search.util.filterBy
 import icu.windea.pls.model.index.ParadoxDefinitionIndexInfo
 import icu.windea.pls.script.psi.ParadoxDefinitionElement
-import icu.windea.pls.script.psi.ParadoxScriptBlockElement
+import icu.windea.pls.script.psi.ParadoxScriptBlock
 import icu.windea.pls.script.psi.ParadoxScriptElementFactory
 
 object ListBuilders {
@@ -26,10 +26,10 @@ object ListBuilders {
 
         val content = buildListTextWithFormat(megas, ToolData.listFormats["scripted_trigger"]!!, mapOf("trigger" to "\$CONDITION\$"))
 
-        replaceBlockContents(project, trigger.block!!, content)
+        replaceBlockContents(project, trigger.block!! as ParadoxScriptBlock, content)
     }
 
-    fun replaceBlockContents(project: Project, block: ParadoxScriptBlockElement, contents: String) {
+    fun replaceBlockContents(project: Project, block: ParadoxScriptBlock, contents: String) {
         val newBlock = ParadoxScriptElementFactory.createBlockFromText(project, "{\n# ${ToolData.textGeneratedBlock}\n$contents\n}")
         block.replace(newBlock)
     }

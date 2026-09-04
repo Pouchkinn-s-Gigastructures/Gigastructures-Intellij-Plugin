@@ -27,6 +27,7 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import icu.windea.pls.core.property
 import icu.windea.pls.lang.psi.properties
+import icu.windea.pls.script.psi.ParadoxScriptBlock
 import icu.windea.pls.script.psi.ParadoxScriptFile
 
 class RegenMegaCategoryLists : DumbAwareAction() {
@@ -86,9 +87,9 @@ class RegenMegaCategoryLists : DumbAwareAction() {
         val builder = StringBuilder()
         builder.appendGeneratedFileWarning()
 
-        for (keyVal in Megastructure.allFamilies) {
-            val familyName = keyVal.key
-            val family = keyVal.value
+        val sortedFamilies = Megastructure.allFamilies.keys.sorted()
+        for (familyName in sortedFamilies) {
+            val family = Megastructure.allFamilies[familyName]!!.sortedBy { def -> def.name }
             builder.appendLine("# $familyName")
             builder.appendLine("giga_mega_is_$familyName = {")
 
@@ -128,7 +129,7 @@ class RegenMegaCategoryLists : DumbAwareAction() {
         builder.appendLine("switch = {")
         builder.appendLine("trigger = is_megastructure_type")
 
-        for (mega in Megastructure.cache.values.filterNotNull()) {
+        for (mega in Megastructure.cache.values) {
             val tags = mega.getAllTags().filter { tag -> tag.classify }
             if (mega.megaFamily == null && tags.isEmpty()) { continue }
 
@@ -172,7 +173,7 @@ class RegenMegaCategoryLists : DumbAwareAction() {
         builder.appendLine("switch = {")
         builder.appendLine("trigger = is_constructing")
 
-        for (mega in Megastructure.cache.values.filterNotNull()) {
+        for (mega in Megastructure.cache.values) {
             val tags = mega.getAllTags().filter { tag -> tag.classify }
             if (mega.megaFamily == null && tags.isEmpty()) { continue }
 
@@ -248,10 +249,11 @@ class RegenMegaCategoryLists : DumbAwareAction() {
             // get all entries of the matching type which have matching tags and generate a list with the given template
             val generated = ListBuilders.buildListTextWithFormat(allEntries
                 .filter { def -> info.tagEvaluator.evaluate(def) }
-                .map { def -> def.def.inlined },
+                .map { def -> def.def.inlined }
+                .sortedBy { def -> def.name },
                 info.template, info.parameters)
             // apply new block contents
-            ListBuilders.replaceBlockContents(project, tList.def.base.block!!, generated)
+            ListBuilders.replaceBlockContents(project, tList.def.base.block!! as ParadoxScriptBlock, generated)
         }
     }
 

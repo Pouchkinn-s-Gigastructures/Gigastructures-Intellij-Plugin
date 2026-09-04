@@ -11,14 +11,14 @@ import com.github.ttftcuts.gigatools.main.wrappers.parts.EconomicUnit.Companion.
 import com.intellij.openapi.project.Project
 import icu.windea.pls.lang.psi.properties
 import icu.windea.pls.lang.psi.values
-import icu.windea.pls.script.psi.ParadoxScriptBlockElement
+import icu.windea.pls.script.psi.ParadoxScriptBlock
 
 class Megastructure(override val def: DefinitionHolder) : Definition(def), EconomicUnit, IMegaFamilyProperty by MegaFamilyProperty(def) {
 
     val upgradeFrom : Set<Megastructure> by lazy {
         val upgradeData = def.findProperty("upgrade_from") ?: return@lazy setOf()
         val upgradeBlock = upgradeData.propertyValue
-        if (upgradeBlock !is ParadoxScriptBlockElement) { return@lazy setOf() }
+        if (upgradeBlock !is ParadoxScriptBlock) { return@lazy setOf() }
 
         upgradeBlock.values().mapNotNull {
             v ->
@@ -141,7 +141,7 @@ class Megastructure(override val def: DefinitionHolder) : Definition(def), Econo
                 if (potential == null) { tagBuildable(firstStage); continue }
 
                 // if potential but it's busted, not buildable
-                val block = potential.propertyValue as? ParadoxScriptBlockElement ?: continue
+                val block = potential.propertyValue as? ParadoxScriptBlock ?: continue
 
                 val blockProperties = block.properties(inline = true).toList()
                 // if the potential is empty, buildable

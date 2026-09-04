@@ -3,17 +3,13 @@ package com.github.ttftcuts.gigatools.main.definitions
 import com.github.ttftcuts.gigatools.main.util.PsiUtils.isVanilla
 import icu.windea.pls.core.collections.process
 import icu.windea.pls.ep.resolve.ParadoxInlineScriptInlineSupport
-import icu.windea.pls.inject.injectors.addon.ParadoxScriptPsiCodeInjectors
 import icu.windea.pls.lang.fileInfo
 import icu.windea.pls.lang.psi.members
 import icu.windea.pls.lang.psi.properties
-import icu.windea.pls.lang.util.evaluators.ParadoxInlineMathEvaluator
-import icu.windea.pls.script.codeInsight.template.ParadoxScriptTemplateContextType
+import icu.windea.pls.lang.util.evaluators.ParadoxInlineMathExpressionEvaluator
 import icu.windea.pls.script.psi.ParadoxDefinitionElement
-import icu.windea.pls.script.psi.ParadoxScriptBlockElement
+import icu.windea.pls.script.psi.ParadoxScriptBlock
 import icu.windea.pls.script.psi.ParadoxScriptElementFactory
-import icu.windea.pls.script.psi.ParadoxScriptInlineMath
-import icu.windea.pls.script.psi.ParadoxScriptInlineMathParameter
 import icu.windea.pls.script.psi.ParadoxScriptMember
 import icu.windea.pls.script.psi.ParadoxScriptProperty
 
@@ -53,7 +49,8 @@ class DefinitionHolder(val base: ParadoxDefinitionElement) {
                 replaced = replaced.replace(MATH_PATTERN) {
                     val mathToDo = ParadoxScriptElementFactory.createInlineMathFromText(project, it.groupValues[0])
 
-                    ParadoxInlineMathEvaluator().evaluate(mathToDo).value.toString()
+
+                    ParadoxInlineMathExpressionEvaluator().evaluate(mathToDo).value.toString()
                 }
             } catch (e: Exception) {}
 
@@ -83,10 +80,10 @@ class DefinitionHolder(val base: ParadoxDefinitionElement) {
                             val data = mutableMapOf<String, MutableList<String>>()
 
                             // if it's a block, fill out the data
-                            if (it.propertyValue is ParadoxScriptBlockElement) {
+                            if (it.propertyValue is ParadoxScriptBlock) {
                                 // get the block
-                                val inlineBlock: ParadoxScriptBlockElement =
-                                    it.propertyValue as ParadoxScriptBlockElement
+                                val inlineBlock: ParadoxScriptBlock =
+                                    it.propertyValue as ParadoxScriptBlock
                                 //println(inlineBlock.propertyList)
 
                                 //val replaceParameters = parameterStack.last()
@@ -111,7 +108,7 @@ class DefinitionHolder(val base: ParadoxDefinitionElement) {
                     else {
                         //println("type: ${it.propertyValue?.javaClass?.simpleName}")
                         // if it's a block, process its members
-                        if (it.propertyValue is ParadoxScriptBlockElement) {
+                        if (it.propertyValue is ParadoxScriptBlock) {
                             builder.appendLine("${it.name} = {")
 
                             it.members(inline = true).process(::processor)

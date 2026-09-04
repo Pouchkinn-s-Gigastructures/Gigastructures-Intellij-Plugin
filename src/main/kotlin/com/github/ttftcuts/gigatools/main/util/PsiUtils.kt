@@ -187,9 +187,9 @@ object PsiUtils {
                     val data = mutableMapOf<String,MutableList<String>>()
 
                     // if it's a block, fill out the data
-                    if (it.propertyValue is ParadoxScriptBlockElement) {
+                    if (it.propertyValue is ParadoxScriptBlock) {
                         // get the block
-                        val inlineBlock: ParadoxScriptBlockElement = it.propertyValue as ParadoxScriptBlockElement
+                        val inlineBlock: ParadoxScriptBlock = it.propertyValue as ParadoxScriptBlock
                         //println(inlineBlock.propertyList)
 
                         //val replaceParameters = parameterStack.last()
